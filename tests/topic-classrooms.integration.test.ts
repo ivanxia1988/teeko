@@ -67,6 +67,7 @@ test('a packaged topic is discoverable, opens its bundled version, and saves top
  assert.equal(first.course.version,course.version);
  assert.equal(first.course.steps[first.stepIndex].pageId,course.pages[0].id);
  const {snapshot}=await service.claim(owner,first.id);
+ assert.deepEqual(snapshot.teacherObjectIds,[]);
  await assert.rejects(service.action(owner,first.id,{
   eventId:randomUUID(),expectedRevision:snapshot.revision,type:'select',objectIds:['blow'],
  }),{code:'ACTION_UNAVAILABLE'});
@@ -80,6 +81,37 @@ test('a packaged topic is discoverable, opens its bundled version, and saves top
  const reopened=await service.create(owner,course.id);
  assert.equal(reopened.stepIndex,0);
  assert.notEqual(reopened.id,first.id);
+});
+
+test('GPT Live packaged topic marks the current planned object when opened and after a spoken next page',{skip:!database},async t=>{
+ const {pool,owner,service}=await fixture(t);
+ const content=await loadTopicContent(fileURLToPath(new URL('../courses/topics',import.meta.url)));
+ await publishTrialCourses(pool,content.courses);
+ const classroom=await service.create(owner,'whale-snot-drones',{...DEFAULT_CLASSROOM_PREFERENCES,provider:'openai'});
+ assert.deepEqual(classroom.teacherObjectIds,[]);
+ const {snapshot,epoch,ownerToken}=await service.claim(owner,classroom.id);
+ assert.deepEqual(snapshot.teacherObjectIds,['blow']);
+ assert.deepEqual(snapshot.outcomes,[]);
+ assert.equal(snapshot.feedback,null);
+
+ const navigation=await service.receiveTranscript(owner,classroom.id,epoch,ownerToken,{
+  role:'child',text:'下一页',final:true,itemId:randomUUID(),contextKey:`${classroom.id}:${epoch}:${snapshot.stepIndex}`,source:'speech',
+ });
+ assert.equal(navigation,'navigation');
+ const second=await service.get(owner,classroom.id);
+ assert.equal(second.course.steps[second.stepIndex].pageId,'whale-read');
+ assert.deepEqual(second.teacherObjectIds,['news-passage']);
+ assert.deepEqual(second.outcomes,[{stepId:snapshot.course.steps[snapshot.stepIndex].id,status:'unassessed'}]);
+ assert.equal(second.feedback,null);
+
+ const stored=(await pool.query('SELECT helped_steps,teaching_state FROM teeko_classrooms WHERE id=$1',[classroom.id])).rows[0];
+ assert.deepEqual(stored.helped_steps,[]);
+ assert.deepEqual(stored.teaching_state.hints??{},{});
+ const events=(await pool.query("SELECT step_index,revision,actor,status,details FROM teeko_classroom_journal WHERE classroom_id=$1 AND name='highlight_objects' ORDER BY id",[classroom.id])).rows;
+ assert.deepEqual(events.map(event=>[event.step_index,event.revision,event.actor,event.status,event.details.source,event.details.highlighted]),[
+  [0,snapshot.revision,'application','confirmed','application',['blow']],
+  [1,second.revision,'application','confirmed','application',['news-passage']],
+ ]);
 });
 
 test('topic history paginates persisted own records with stable ties and separate advice status',{skip:!database},async t=>{

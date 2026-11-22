@@ -50,6 +50,8 @@ test('public catalog reads published topics, filters them, and never creates a c
   render(<TopicCatalog/>);
   await waitFor(() => assert(screen.getByRole('heading', { name: '会飞又会游的机器人' })));
   assert(screen.getByRole('heading', { name: '一起准备一次野餐' }));
+  assert(!screen.queryByText('选一个感兴趣的主题，和 Teeko 一起读、一起聊。'));
+  assert(!screen.queryByText('每个主题都可以独立开始，聊到哪里，由你和 Teeko 一起决定。'));
   assert(!screen.queryByText('企鹅为什么不怕冷？'));
   fireEvent.click(screen.getByRole('button', { name: '生活' }));
   assert(!screen.queryByRole('heading', { name: '会飞又会游的机器人' }));
@@ -65,6 +67,10 @@ test('preview is public and beginning conversation preserves the chosen topic th
   render(<TopicDetail topicId="topic-robot" navigate={path => paths.push(path)}/>);
   await waitFor(() => assert(!(screen.getByRole('button', { name: '和 Teeko 一起学' }) as HTMLButtonElement).disabled));
   assert(screen.getByRole('article', { name: '教材预览' }));
+  assert(screen.getByRole('link', { name: /素材来源/ }));
+  assert(!screen.queryByText('READ & DISCOVER'));
+  assert(!screen.queryByText('和 Teeko 一起读，再聊聊自己的想法。'));
+  assert(!screen.queryByText('开始交流前，登录或注册账号。'));
   assert(!screen.queryByText('查看教师提示词'));
   assert(!screen.queryByRole('heading', { name: 'GPT Live 工具注册' }));
   fireEvent.click(screen.getByRole('button', { name: '和 Teeko 一起学' }));
@@ -115,6 +121,8 @@ test('a new account saves its profile before reading classroom preferences and s
   fireEvent.change(screen.getByLabelText('孩子的称呼'), { target: { value: 'Mia' } });
   fireEvent.click(screen.getByRole('button', { name: '保存并继续' }));
   await waitFor(() => assert(screen.getByRole('button', { name: '开始这次学习' })));
+  assert(screen.getByText('摄像头 · 可选，默认关闭'));
+  assert(!screen.queryByText('一起读，也听听你的想法。'));
   fireEvent.click(screen.getByRole('button', { name: '开始这次学习' }));
   fireEvent.click(screen.getByRole('button', { name: '正在准备课堂…' }));
   await waitFor(() => assert.deepEqual(paths, [`/topics/classroom/${id}`]));

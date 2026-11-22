@@ -1,6 +1,7 @@
 import {classroomAdvanceCue, CLASSROOM_SILENCE_CUE, gptRobotHighlightCue} from '../classroom-cues';
 import {buildLiveHighlightResponsesInstructions, liveHighlightTarget, LiveHighlightResponses} from './classroom-live-highlight';
-import {gptClassroomContextText, gptClassroomDelegation} from './classroom-voice-prompt';
+import {gptClassroomContextText, gptClassroomDelegation, packagedTopicEntryCue} from './classroom-voice-prompt';
+import {isReadingStep} from '../classroom-reading';
 import {ClassroomAudioDiagnostics} from './classroom-audio-diagnostics';
 import {ClassroomSilencePrompt} from './classroom-silence';
 import {ClassroomDiagnosticTrace,type DiagnosticSpan} from './classroom-diagnostic-trace';
@@ -936,7 +937,7 @@ export function attachClassroomSockets(server: Server, options: ClassroomSocketO
       if (taskChanged && configuredRobotHighlight && !robotHighlightUnavailable) {
         send(upstream,{type:'session.update',event_id:eventId(),session:{delegation:{type:'responses',responses:{instructions:buildLiveHighlightResponsesInstructions(snapshot)}}}});
       }
-      const pageCue=cue&&taskChanged?(lease.pageEntryCue?.(snapshot)??(configuredRobotHighlight&&step?gptRobotHighlightCue(step.id)??undefined:undefined)):undefined;
+      const pageCue=cue&&taskChanged?(lease.pageEntryCue?.(snapshot)??packagedTopicEntryCue(snapshot)??(configuredRobotHighlight&&step?gptRobotHighlightCue(step.id)??undefined:undefined)):undefined;
       if(pageCue){
         if(!protocol&&gptOutputGate)gptPageCue=pageCue;
         else speak(pageCue);
@@ -1309,7 +1310,10 @@ export function attachClassroomSockets(server: Server, options: ClassroomSocketO
         const text = utterance, itemId = randomUUID();
         utterance = ''; voicedMs = 0; silentMs = 0;
         if(!record('child', text, true, itemId, key))return;
-        completedSpeech = { contextKey: key, itemId, used: false };
+        const navigation=!!latestSnapshot.course.topic&&isReadingStep(latestSnapshot.course.steps[stepIndex])&&readingNavigation(text)!==null;
+        completedSpeech = { contextKey: key, itemId, used: navigation };
+        // The persisted transcript already applies this explicit navigation.
+        if(navigation)return;
         // The lab dispatches one application check for a completed utterance.
         if(lease.labCompletedSpeech&&!classroomControl(text)){
           const pending:LabSpeech={itemId};labSpeech=pending;completedSpeech.used=true;
