@@ -1,0 +1,24 @@
+.tk-topic-classroom .tk-topic-speaking-hint{display:flex;align-items:center;gap:8px;color:#47536b;font-size:13px}
+.tk-topic-classroom .tk-real-annotation{pointer-events:none}
+.tk-topic-recap{min-height:100dvh;background:#fbf8f2;color:#1f2a44}
+.tk-topic-recap-content{width:min(1080px,calc(100% - 64px));margin:0 auto;padding:28px 0 40px}
+.tk-topic-recap-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:24px}
+.tk-topic-recap-heading h1{font-size:clamp(24px,3vw,34px);margin:12px 0}
+.tk-topic-recap-heading p,.tk-topic-recap-note{color:#627084;line-height:1.7;font-size:13px}
+.tk-topic-recap-heading img{width:112px;height:132px;object-fit:contain}
+.tk-topic-recap-eyebrow{color:#16766c;font-weight:700;font-size:13px}
+.tk-topic-recap-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:24px;align-items:start}
+.tk-topic-recap-card{background:#fff;border:1px solid #ede5d6;border-radius:12px;padding:26px;min-width:0}
+.tk-topic-recap-card h2{display:flex;align-items:center;gap:8px;font-size:18px;margin:0 0 18px}
+.tk-topic-recap-card h3{font-size:15px;margin:28px 0 12px}
+.tk-topic-recap-card ul{list-style:none;padding:0;display:grid;gap:14px}
+.tk-topic-recap-card li{display:flex;gap:10px;line-height:1.6;font-size:14px}
+.tk-topic-recap-card li svg{flex-shrink:0;margin-top:4px;color:#2a9d8f}
+.tk-topic-recap-card .tk-classroom-notes{height:auto;min-height:0}
+.tk-topic-recap-card .tk-classroom-notes-body{max-height:42vh;min-height:160px;overflow:auto}
+.tk-topic-recap-actions{display:flex;align-items:center;justify-content:center;gap:26px;margin-top:28px}
+.tk-topic-recap-actions>a{display:inline-flex;align-items:center;gap:8px;font-size:14px}
+.tk-topic-recap-actions .tk-submit{width:auto;min-width:260px}
+.tk-topic-recap a:focus-visible,.tk-topic-recap button:focus-visible{outline:3px solid #2a9d8f;outline-offset:3px}
+@media(max-width:700px){.tk-topic-recap-content{width:calc(100% - 32px);padding-top:16px}.tk-topic-recap-grid{grid-template-columns:1fr;gap:16px}.tk-topic-recap-heading img{width:76px;height:96px}.tk-topic-recap-card{padding:20px}.tk-topic-recap-actions{flex-direction:column;gap:18px}.tk-topic-classroom .tk-topic-speaking-hint{font-size:0;gap:0}.tk-topic-classroom .tk-topic-speaking-hint svg{width:18px}.tk-topic-recap .tk-product-header nav{display:flex;gap:12px}}
+@media(prefers-reduced-motion:reduce){.tk-topic-recap *{scroll-behavior:auto;animation:none;transition:none}}

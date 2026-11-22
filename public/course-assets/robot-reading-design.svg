@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="720" viewBox="0 0 900 720" role="img" aria-labelledby="title desc">
+<title id="title">Why might a wing bend?</title><desc id="desc">Original comparison of a straighter wing in air and a bending wing in water. The diagrams are conceptual, not measurements.</desc>
+<rect width="900" height="720" rx="12" fill="#fffdf6"/>
+<g font-family="Arial,sans-serif" fill="#263d4b">
+<text x="54" y="43" font-size="17" letter-spacing="2" fill="#34796e">TEEKO / ROBOT READING</text>
+<text x="54" y="104" font-size="40" font-weight="700">Why might a wing bend?</text>
+<rect x="52" y="144" width="378" height="288" rx="20" fill="#f1f5ef"/><rect x="470" y="144" width="378" height="288" rx="20" fill="#dceef2"/><text x="241" y="189" font-size="25" text-anchor="middle" fill="#537b74">AIR</text><text x="659" y="189" font-size="25" text-anchor="middle" fill="#397c8a">WATER</text><path d="m100 287 243-47 28 62-264 25Z" fill="#efc28f" stroke="#263d4b" stroke-width="3"/><path d="m110 306 244-35" stroke="#8d694b" stroke-width="3"/><circle cx="107" cy="306" r="13" fill="#536d77"/><path d="M516 284q100-60 158 8t115 45l-29 48q-81-10-113-59t-124-14Z" fill="#efc28f" stroke="#263d4b" stroke-width="3"/><path d="M523 301q84-36 133 8t119 48" fill="none" stroke="#8d694b" stroke-width="3"/><circle cx="524" cy="301" r="13" fill="#536d77"/><path d="m729 244-15 25m15-25-26 6m26-6 5 26" stroke="#34796e" stroke-width="3" fill="none" stroke-linecap="round"/><text x="241" y="400" font-size="23" text-anchor="middle" fill="#537168">Compare the shapes.</text><text x="659" y="410" font-size="23" text-anchor="middle" fill="#397c8a">What changes?</text>
+<rect x="40" y="465" width="820" height="174" rx="16" fill="#f2f5eb"/>
+<text x="60" y="510" font-size="32" data-reading-passage="true"><tspan x="60" dy="0">A flexible material can bend.</tspan><tspan x="60" dy="44">Imagine moving your hand through</tspan><tspan x="60" dy="44">air and water. What might change?</tspan></text>
+<text x="54" y="689" font-size="17" fill="#557168">TEEKO original concept diagram and activity</text>
+</g></svg>

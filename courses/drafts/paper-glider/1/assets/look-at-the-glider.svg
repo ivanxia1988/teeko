@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+  <title>A paper glider</title>
+  <desc>Two folds form wings on an orange paper glider.</desc>
+  <rect width="900" height="620" rx="28" fill="#fdf5e7"/>
+  <text x="66" y="108" fill="#362b20" font-family="sans-serif" font-size="50" font-weight="bold">A Paper Glider</text>
+  <path d="M210 270 715 175 456 376 425 311Z" fill="#ed8745" stroke="#a54a21" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M210 270 715 175 425 311Z" fill="#ffc77e" stroke="#a54a21" stroke-width="6" stroke-linejoin="round"/>
+  <text x="66" y="490" fill="#362b20" font-family="sans-serif" font-size="34">A paper glider has wings.</text>
+  <text x="66" y="540" fill="#362b20" font-family="sans-serif" font-size="34">What do you notice about this one?</text>
+</svg>

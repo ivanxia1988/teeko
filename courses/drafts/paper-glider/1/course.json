@@ -1,0 +1,121 @@
+{
+  "id": "paper-glider",
+  "version": "1",
+  "title": "一架纸飞机",
+  "subtitle": "A Paper Glider",
+  "description": "看一看纸飞机，再用英语说出一次试飞的想法。",
+  "words": [
+    "glider",
+    "wing",
+    "fold"
+  ],
+  "objectives": [
+    "用英语描述一个看见的部位",
+    "说出一项想尝试的改动"
+  ],
+  "durationMinutes": 5,
+  "pages": [
+    {
+      "id": "glider-look",
+      "image": "/course-assets/paper-glider/1/look-at-the-glider.svg",
+      "width": 900,
+      "height": 620,
+      "objects": [
+        {
+          "id": "wing",
+          "label": "wing",
+          "chinese": "机翼",
+          "box": {
+            "x": 0.23,
+            "y": 0.27,
+            "w": 0.52,
+            "h": 0.35
+          }
+        },
+        {
+          "id": "nose",
+          "label": "nose",
+          "chinese": "机头",
+          "box": {
+            "x": 0.7,
+            "y": 0.27,
+            "w": 0.1,
+            "h": 0.14
+          }
+        }
+      ]
+    },
+    {
+      "id": "glider-test",
+      "image": "/course-assets/paper-glider/1/test-flight.svg",
+      "width": 900,
+      "height": 620,
+      "objects": [
+        {
+          "id": "flight-path",
+          "label": "flight path",
+          "chinese": "飞行路线",
+          "box": {
+            "x": 0.15,
+            "y": 0.32,
+            "w": 0.65,
+            "h": 0.3
+          }
+        }
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "look-at-the-glider",
+      "kind": "speak",
+      "pageId": "glider-look",
+      "targetId": "wing",
+      "english": "Hi! What do you notice about this little paper glider?",
+      "chinese": "观察纸飞机",
+      "hint": "You can say: I see a big wing.",
+      "expected": null,
+      "reading": {
+        "phase": "predict",
+        "passage": "A paper glider has wings. What do you notice about this one?",
+        "goal": "Name or describe one visible feature.",
+        "teacherNotes": "Greet briefly. Point to wing while saying wing. Accept any observation, then invite the learner to say if they want to try a flight.",
+        "followUp": "Which part do you notice first?"
+      }
+    },
+    {
+      "id": "try-a-flight",
+      "kind": "speak",
+      "pageId": "glider-test",
+      "targetId": "flight-path",
+      "english": "What would you change before your second flight?",
+      "chinese": "比较两次试飞",
+      "hint": "You can say: I would change one fold.",
+      "expected": null,
+      "reading": {
+        "phase": "explain",
+        "passage": "Try two flights. Change one fold and see what happens.",
+        "goal": "Suggest one change and one observation.",
+        "teacherNotes": "Point to flight-path while explaining the two trials. Treat flight differences as things to observe. If interrupted, answer first and return to the comparison.",
+        "followUp": "What would you look for on the second flight?"
+      }
+    },
+    {
+      "id": "glider-chat",
+      "kind": "listen",
+      "pageId": "glider-test",
+      "targetId": null,
+      "english": "What else would you like to try with a paper glider?",
+      "chinese": "自由聊试飞",
+      "hint": "You can say: I would try a bigger wing.",
+      "expected": null,
+      "reading": {
+        "phase": "chat",
+        "passage": "Try two flights. Change one fold and see what happens.",
+        "goal": "Share an idea in the learner's own words.",
+        "teacherNotes": "Follow the learner's idea and model one useful expression. Let the learner choose when to finish.",
+        "followUp": "What do you think might happen?"
+      }
+    }
+  ]
+}

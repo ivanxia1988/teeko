@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {classroomPointDiagnosticEventSchema,classroomPointDiagnosticsBodySchema} from '../lib/classroom-point-diagnostics';
+const event={id:'10000000-0000-4000-8000-000000000001',pointId:'20000000-0000-4000-8000-000000000001',context:{logicalSessionId:'classroom',courseVersion:'robot:1',connectionEpoch:1,stateRevision:2,pageId:'page',activityId:'reading'},stage:'send_failed',reason:'not_ready',objectId:'wings'};
+test('point diagnostics retain only bounded client observations in strict batches',()=>{assert.deepEqual(classroomPointDiagnosticsBodySchema.parse({events:[event]}),{events:[event]});for(const extra of [{stage:'accepted'},{stage:'audio_sent'},{source:'provider'},{text:'private'},{audio:'AAAA'},{reason:'private-body'},{objectId:'x'.repeat(101)},{id:'bad'},{context:{...event.context,owner:true}}])assert.equal(classroomPointDiagnosticEventSchema.safeParse({...event,...extra}).success,false);for(const body of [{events:[]},{events:Array(11).fill(event)},{events:[event],owner:'other'}])assert.equal(classroomPointDiagnosticsBodySchema.safeParse(body).success,false);});

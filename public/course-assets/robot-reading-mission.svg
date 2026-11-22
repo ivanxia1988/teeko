@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="720" viewBox="0 0 900 720" role="img" aria-labelledby="title desc">
+<title id="title">Give your robot a mission</title><desc id="desc">Original robot concept diagram beside an empty idea card. Equipment and missions discussed here are the learner’s proposals.</desc>
+<rect width="900" height="720" rx="12" fill="#fffdf6"/>
+<g font-family="Arial,sans-serif" fill="#263d4b">
+<text x="54" y="43" font-size="17" letter-spacing="2" fill="#34796e">TEEKO / ROBOT READING</text>
+<text x="54" y="104" font-size="40" font-weight="700">Give your robot a mission</text>
+<rect x="52" y="144" width="548" height="288" rx="20" fill="#eef3ef"/><path d="M52 354q55-16 110 0t110 0t110 0t110 0t108 0v58q0 20-20 20H72q-20 0-20-20Z" fill="#dceef2"/><g transform="translate(322 286) scale(0.93)" stroke="#263d4b" stroke-width="3" stroke-linejoin="round"><path d="M-24-18-236-68-183 28-28 18Z" fill="#efc28f"/><path d="m24-18 212-50-53 96L28 18Z" fill="#efc28f"/><path d="m-24-18-159 46m159-46-123-29m171 29 159 46M24-18l123-29" fill="none" opacity=".5"/><rect x="-28" y="-66" width="56" height="132" rx="18" fill="#536d77"/><rect x="-15" y="-39" width="30" height="48" rx="5" fill="#c5d5d6" stroke-width="2"/><circle cy="25" r="10" fill="#f7e0b8"/><path d="M-8 63-54 95H54L8 63Z" fill="#b8cbcc"/><path d="M0-66v-18" fill="none" stroke-linecap="round"/></g><path d="M612 287h31m-9-9 9 9-9 9" fill="none" stroke="#a1b5ad" stroke-width="3"/><rect x="659" y="151" width="188" height="250" rx="18" fill="#fff1df" stroke="#dab88d" stroke-width="2" stroke-dasharray="7 6"/><text x="753" y="195" font-size="23" font-weight="700" text-anchor="middle" fill="#946234">YOUR IDEA</text><text x="753" y="306" font-size="92" text-anchor="middle" fill="#b67940">?</text><text x="753" y="365" font-size="22" text-anchor="middle" fill="#946234">Add? Test?</text>
+<rect x="40" y="465" width="820" height="174" rx="16" fill="#f2f5eb"/>
+<text x="60" y="510" font-size="32" data-reading-passage="true"><tspan x="60" dy="0">Choose a mission for your robot.</tspan><tspan x="60" dy="44">What would you add,</tspan><tspan x="60" dy="44">and what would you test?</tspan></text>
+<text x="54" y="689" font-size="17" fill="#557168">TEEKO original diagram and design activity</text>
+</g></svg>

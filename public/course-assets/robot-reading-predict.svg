@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="720" viewBox="0 0 900 720" role="img" aria-labelledby="title desc">
+<title id="title">An unusual machine</title><desc id="desc">Original concept diagram of a machine with a body, wings and tail. Look for a clue to what it could do.</desc>
+<rect width="900" height="720" rx="12" fill="#fffdf6"/>
+<g font-family="Arial,sans-serif" fill="#263d4b">
+<text x="54" y="43" font-size="17" letter-spacing="2" fill="#34796e">TEEKO / ROBOT READING</text>
+<text x="54" y="104" font-size="40" font-weight="700">An unusual machine</text>
+<rect x="52" y="144" width="796" height="288" rx="20" fill="#eef3ef"/><g transform="translate(450 287) scale(1.2)" stroke="#263d4b" stroke-width="3" stroke-linejoin="round"><path d="M-24-18-236-68-183 28-28 18Z" fill="#efc28f"/><path d="m24-18 212-50-53 96L28 18Z" fill="#efc28f"/><path d="m-24-18-159 46m159-46-123-29m171 29 159 46M24-18l123-29" fill="none" opacity=".5"/><rect x="-28" y="-66" width="56" height="132" rx="18" fill="#536d77"/><rect x="-15" y="-39" width="30" height="48" rx="5" fill="#c5d5d6" stroke-width="2"/><circle cy="25" r="10" fill="#f7e0b8"/><path d="M-8 63-54 95H54L8 63Z" fill="#b8cbcc"/><path d="M0-66v-18" fill="none" stroke-linecap="round"/></g>
+<rect x="40" y="465" width="820" height="174" rx="16" fill="#f2f5eb"/>
+<text x="60" y="510" font-size="32" data-reading-passage="true"><tspan x="60" dy="0">Look closely at this machine.</tspan><tspan x="60" dy="44">Which parts give you clues about</tspan><tspan x="60" dy="44">what it might do?</tspan></text>
+<text x="54" y="689" font-size="17" fill="#557168">TEEKO original diagram and activity</text>
+</g></svg>

@@ -1,0 +1,35 @@
+{
+  "kind": "synthetic_smoke",
+  "cases": [
+    {
+      "id": "dark",
+      "file": "dark.jpg",
+      "labels": {
+        "scene_clear": false,
+        "person_visible": null,
+        "object_held": null,
+        "held_object": "unclear"
+      }
+    },
+    {
+      "id": "blank",
+      "file": "blank.jpg",
+      "labels": {
+        "scene_clear": null,
+        "person_visible": false,
+        "object_held": false,
+        "held_object": "none"
+      }
+    },
+    {
+      "id": "shapes",
+      "file": "shapes.jpg",
+      "labels": {
+        "scene_clear": true,
+        "person_visible": false,
+        "object_held": false,
+        "held_object": "none"
+      }
+    }
+  ]
+}

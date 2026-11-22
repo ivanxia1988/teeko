@@ -1,0 +1,13 @@
+.tk-classroom-chalk{
+ position:absolute;left:50%;bottom:8%;transform:translateX(-50%);z-index:18;
+ max-width:calc(100% - 48px);width:max-content;padding:14px 24px;
+ border:1px solid #fff5;border-radius:8px;background:var(--tk-teal-700,#17665c);
+ color:var(--tk-cream-50,#fbf8f2);box-shadow:0 5px 16px #1f2a4420;
+ pointer-events:none;user-select:none;text-align:center;
+ font:600 clamp(22px,2.4cqw,32px)/1.5 'Chalkboard SE','Segoe Print',TeekoNunito,system-ui,sans-serif;
+ overflow-wrap:anywhere;white-space:normal;
+ animation:tk-chalk-reveal .45s ease-out both,tk-chalk-erase .4s ease-in calc(var(--tk-chalk-duration) - .4s) forwards;
+}
+@keyframes tk-chalk-reveal{from{clip-path:inset(0 100% 0 0);opacity:0}to{clip-path:inset(0);opacity:1}}
+@keyframes tk-chalk-erase{to{opacity:0;filter:blur(2px)}}
+@media(prefers-reduced-motion:reduce){.tk-classroom-chalk{animation:none;transition:none}}

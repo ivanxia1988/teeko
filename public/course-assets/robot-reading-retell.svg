@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="720" viewBox="0 0 900 720" role="img" aria-labelledby="title desc">
+<title id="title">Tell a friend</title><desc id="desc">Three original planning cards: what the robot can do, a design clue, and the learner’s own idea or question.</desc>
+<rect width="900" height="720" rx="12" fill="#fffdf6"/>
+<g font-family="Arial,sans-serif" fill="#263d4b">
+<text x="54" y="43" font-size="17" letter-spacing="2" fill="#34796e">TEEKO / ROBOT READING</text>
+<text x="54" y="104" font-size="40" font-weight="700">Tell a friend</text>
+<g><rect x="62" y="160" width="234" height="250" rx="18" fill="#f2f6f1" stroke="#c6d6ca"/><text x="179" y="201" text-anchor="middle" font-size="24" font-weight="700" fill="#34796e">CAN DO</text><path d="m100 286 75-28 78 28-78 24Z" fill="#efc28f" stroke="#263d4b" stroke-width="3"/><path d="M99 344q19-12 38 0t38 0t38 0t38 0" fill="none" stroke="#549ba8" stroke-width="3"/></g><g><rect x="333" y="160" width="234" height="250" rx="18" fill="#f2f6f1" stroke="#c6d6ca"/><text x="450" y="201" text-anchor="middle" font-size="24" font-weight="700" fill="#34796e">DESIGN</text><path d="M365 289q68-50 106 1t62 38l-21 37q-52-3-76-46t-65 0Z" fill="#efc28f" stroke="#263d4b" stroke-width="3"/></g><g><rect x="604" y="160" width="234" height="250" rx="18" fill="#f2f6f1" stroke="#c6d6ca"/><text x="721" y="201" text-anchor="middle" font-size="24" font-weight="700" fill="#34796e">MY IDEA</text><path d="M650 248h134v91H704l-26 23v-23h-28Z" fill="#fff8eb" stroke="#b08b54" stroke-width="3"/><text x="717" y="315" text-anchor="middle" font-size="52" fill="#946234">?</text></g>
+<rect x="40" y="465" width="820" height="174" rx="16" fill="#f2f5eb"/>
+<text x="60" y="510" font-size="32" data-reading-passage="true"><tspan x="60" dy="0">Tell a friend what the robot can do.</tspan><tspan x="60" dy="44">Share one design idea</tspan><tspan x="60" dy="44">or one question of your own.</tspan></text>
+<text x="54" y="689" font-size="17" fill="#557168">TEEKO original diagrams and speaking activity</text>
+</g></svg>

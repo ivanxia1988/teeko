@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="796" height="288" viewBox="52 144 796 288">
+  <rect x="52" y="144" width="796" height="288" rx="20" fill="#f0f5f1"/>
+  <path d="M52 310q60-18 120 0t120 0t120 0t120 0t196 0v102q0 20-20 20H72q-20 0-20-20Z" fill="#dceef2"/>
+  <g transform="translate(450 265) scale(0.95)" stroke="#263d4b" stroke-width="3" stroke-linejoin="round">
+    <path d="M-24-18-236-68-183 28-28 18Z" fill="#efc28f"/>
+    <path d="m24-18 212-50-53 96L28 18Z" fill="#efc28f"/>
+    <path d="m-24-18-159 46m159-46-123-29m171 29 159 46M24-18l123-29" fill="none" opacity=".5"/>
+    <rect x="-28" y="-66" width="56" height="132" rx="18" fill="#536d77"/>
+    <rect x="-15" y="-39" width="30" height="48" rx="5" fill="#c5d5d6" stroke-width="2"/>
+    <circle cy="25" r="10" fill="#f7e0b8"/>
+    <path d="M-8 63-54 95H54L8 63Z" fill="#b8cbcc"/>
+    <path d="M0-66v-18" fill="none" stroke-linecap="round"/>
+  </g>
+  <text x="81" y="187" font-family="Arial,sans-serif" font-size="24" fill="#537b74">AIR</text>
+  <text x="81" y="402" font-family="Arial,sans-serif" font-size="24" fill="#397c8a">WATER</text>
+</svg>
