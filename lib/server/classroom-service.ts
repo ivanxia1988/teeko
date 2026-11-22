@@ -150,7 +150,14 @@ export class ClassroomService {
       await db.query("INSERT INTO teeko_classroom_note_jobs(id,classroom_id,source_revision,status,run_after,created_at,updated_at) VALUES($1,$2,$3,'pending',$4,$4,$4) ON CONFLICT(classroom_id) DO NOTHING",[randomUUID(),row.id,row.revision,this.now()]);
     }
   }
-  private async snapshot(db:PoolClient,row:Row):Promise<ClassroomSnapshot>{return {id:row.id,course:await this.course(db,row),profile:row.profile,preferences:row.preferences,status:row.status,revision:row.revision,connectionEpoch:row.connection_epoch,stepIndex:row.step_index,elapsedSeconds:Math.floor(Number(row.elapsed_ms)/1000),remainingSeconds:Math.max(0,Math.ceil((Number(row.max_ms)-Number(row.elapsed_ms))/1000)),maxSeconds:Number(row.max_ms)/1000,outcomes:row.outcomes,teacherObjectIds:row.teacher_object_ids,feedback:row.feedback,endReason:row.end_reason,startedAt:row.started_at.toISOString(),endedAt:row.ended_at?.toISOString()??null,reportStatus:'unavailable'};}
+  private async snapshot(db:PoolClient,row:Row,course?:PublishedCourse):Promise<ClassroomSnapshot>{return {id:row.id,course:course??await this.course(db,row),profile:row.profile,preferences:row.preferences,status:row.status,revision:row.revision,connectionEpoch:row.connection_epoch,stepIndex:row.step_index,elapsedSeconds:Math.floor(Number(row.elapsed_ms)/1000),remainingSeconds:Math.max(0,Math.ceil((Number(row.max_ms)-Number(row.elapsed_ms))/1000)),maxSeconds:Number(row.max_ms)/1000,outcomes:row.outcomes,teacherObjectIds:row.teacher_object_ids,feedback:row.feedback,endReason:row.end_reason,startedAt:row.started_at.toISOString(),endedAt:row.ended_at?.toISOString()??null,reportStatus:'unavailable'};}
+  private async markPlannedTopicObject(db:PoolClient,row:Row,course:PublishedCourse){
+    if(!course.topic||row.status!=='active'||row.preferences.provider!=='openai')return;
+    const step=course.steps[row.step_index],target=step?.targetId;
+    if(!target||row.teacher_object_ids.includes(target)||!course.pages.find(page=>page.id===step.pageId)?.objects.some(object=>object.id===target))return;
+    row.teacher_object_ids=[target];
+    await this.note(db,row,{eventKey:`planned-topic-mark:${row.connection_epoch}:${row.step_index}`,kind:'tool',actor:'application',status:'confirmed',name:'highlight_objects',details:{source:'application',contextKey:`${row.id}:${row.connection_epoch}:${row.step_index}`,objectIds:[target],highlighted:[target],resultStatus:'confirmed',action:'planned_mark'}});
+  }
   async preferences(accountId:string):Promise<ClassroomPreferences>{const result=await this.pool.query('SELECT preferences FROM teeko_preferences WHERE account_id=$1',[accountId]);return result.rows[0]?.preferences??{...DEFAULT_CLASSROOM_PREFERENCES};}
   async savePreferences(accountId:string,preferences:ClassroomPreferences){await this.pool.query('INSERT INTO teeko_preferences(account_id,preferences,updated_at) VALUES($1,$2,$3) ON CONFLICT(account_id) DO UPDATE SET preferences=EXCLUDED.preferences,updated_at=EXCLUDED.updated_at',[accountId,JSON.stringify(preferences),this.now()]);return preferences;}
   async topics():Promise<TopicCard[]>{
@@ -348,7 +355,10 @@ export class ClassroomService {
     const available=Number(row.elapsed_ms)+this.dailyMs-used;
     if(available<Number(row.max_ms)){row.max_ms=available;row.limit_reason='daily_limit';}
     row.status='active';row.connection_epoch++;row.revision++;row.owner_token=randomUUID();row.active_since=this.now();row.lease_until=new Date(this.now().getTime()+15_000);
-    await this.save(db,row);await this.note(db,row,{eventKey:`connection:${row.connection_epoch}`,kind:'connection',actor:'application',status:'recorded',name:'connection_started',details:{state:'active'}});return {snapshot:await this.snapshot(db,row),epoch:row.connection_epoch,ownerToken:row.owner_token};
+    const course=await this.course(db,row);
+    await this.note(db,row,{eventKey:`connection:${row.connection_epoch}`,kind:'connection',actor:'application',status:'recorded',name:'connection_started',details:{state:'active'}});
+    await this.markPlannedTopicObject(db,row,course);
+    await this.save(db,row);return {snapshot:await this.snapshot(db,row,course),epoch:row.connection_epoch,ownerToken:row.owner_token};
   });}
   async heartbeat(accountId:string,id:string,epoch:number,ownerToken:string){return this.tx(accountId,async db=>{
     const row=await this.row(db,accountId,id);await this.settle(db,row);
@@ -394,7 +404,9 @@ export class ClassroomService {
         else{this.feedback(row,'correct','找到了！');this.advance(row,course,row.helped_steps.includes(step.id)?'assisted':'independent');}
       }
     }
-    row.revision++;await this.save(db,row);await db.query('INSERT INTO teeko_classroom_actions(classroom_id,event_id) VALUES($1,$2)',[id,action.eventId]);
+    row.revision++;
+    if(row.step_index!==actionStep)await this.markPlannedTopicObject(db,row,course);
+    await this.save(db,row);await db.query('INSERT INTO teeko_classroom_actions(classroom_id,event_id) VALUES($1,$2)',[id,action.eventId]);
     await this.note(db,row,{eventKey:`action:${action.eventId}`,kind:'interaction',actor:'child',status:'confirmed',name:action.type,correlationId:action.eventId,details:{action:action.type,...(action.objectIds?{objectIds:action.objectIds}:{}),...(row.feedback&&row.feedback.id!==previousFeedback?{feedbackKind:row.feedback.kind}:{}),...(row.end_reason?{endReason:row.end_reason}:{}),state:row.status}},actionStep);return this.snapshot(db,row);
   });}
   async point(accountId:string,id:string,epoch:number,token:string,request:ClassroomPointRequest,authorize?:()=>Promise<boolean>):Promise<{accepted:boolean;snapshot:ClassroomSnapshot}>{return this.tx(accountId,async db=>{
@@ -620,6 +632,7 @@ export class ClassroomService {
         await db.query('DELETE FROM teeko_teaching_decisions WHERE classroom_id=$1 AND (connection_epoch,item_id) NOT IN (SELECT connection_epoch,item_id FROM teeko_teaching_decisions WHERE classroom_id=$1 ORDER BY created_at DESC LIMIT 64)',[id]);
       }
     }
+    if(row.step_index!==toolStep)await this.markPlannedTopicObject(db,row,course);
     await this.save(db,row);
     const latest=readTeachingState(row.teaching_state,row.profile.level).latestInput;
     if(semantic&&latest?.epoch===epoch&&latest.itemId===semantic.itemId&&latest.contextKey===semantic.contextKey){

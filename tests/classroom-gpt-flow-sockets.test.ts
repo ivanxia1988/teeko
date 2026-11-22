@@ -13,14 +13,17 @@ import type {ClassroomSnapshot} from '../lib/classroom-contract';
 type Wire={type?:string;id?:string;content?:string;event_id?:string;audio?:string;playbackId?:number;classroom?:ClassroomSnapshot};
 const waitFor=async(check:()=>boolean,message='Expected event did not arrive')=>{const until=Date.now()+2500;while(!check()){if(Date.now()>=until)throw Error(message);await new Promise(resolve=>setTimeout(resolve,5));}};
 const pcm=(sample:number,ms=100)=>{const bytes=Buffer.alloc(ms*48);for(let i=0;i<bytes.length;i+=2)bytes.writeInt16LE(sample,i);return bytes.toString('base64');};
-async function fixture(lab=false,gptAdvanceWaitMs?:number,toolAdvance=false){
+async function fixture(lab=false,gptAdvanceWaitMs?:number,toolAdvance=false,packagedReading=false){
  const id=randomUUID(),upHttp=createServer(),vendor=new WebSocketServer({server:upHttp}),app=createServer();
  const sent:Wire[]=[],down:Wire[]=[],transcripts:Array<{text:string;contextKey:string}>=[];let peer:WebSocket|undefined;
- let current=teacherSnapshot({id,course:ROBOT_READING_COURSE,stepIndex:0});
+ let toolCalls=0;
+ const course=packagedReading?{...ROBOT_READING_COURSE,topic:{category:'science' as const,difficulty:'starter' as const}}:ROBOT_READING_COURSE;
+ let current=teacherSnapshot({id,course,stepIndex:0});
  const reference=()=>({snapshot:current,instructions:`Synthetic task ${current.stepIndex}.`});
  vendor.on('connection',socket=>{peer=socket;socket.on('message',raw=>{const event=JSON.parse(raw.toString()) as Wire;sent.push(event);if(event.type==='session.thinking.append')socket.send(JSON.stringify({type:'session.thinking.appended',client_event_id:event.event_id}));if(event.type==='session.close')socket.send(JSON.stringify({type:'session.closed'}));});socket.send(JSON.stringify({type:'session.started',session:{id:'synthetic-gpt-flow'}}));});
  upHttp.listen(0,'127.0.0.1');await once(upHttp,'listening');const up=upHttp.address();assert(up&&typeof up!=='string');
  const lease:VoiceLease={id,epoch:1,provider:'openai',...reference(),...(lab?{labCompletedSpeech:true as const}:{}),remainingMs:600000,initialCue:'Describe the robot.',heartbeat:async()=>reference(),transcript:async e=>{if(e.role==='child'&&e.final)transcripts.push({text:e.text,contextKey:e.contextKey});},tool:async(_name,_args,callId,request)=>{
+   toolCalls++;
    if(!toolAdvance)return{output:{status:'conversation'},snapshot:current};
    assert(request);assert(callId);const before=captureClassroomToolState(current);assert(before.ok);
    current={...current,revision:current.revision+1,stepIndex:1};const after=captureClassroomToolState(current);assert(after.ok);
@@ -31,7 +34,7 @@ async function fixture(lab=false,gptAdvanceWaitMs?:number,toolAdvance=false){
  const client=new WebSocket(`ws://127.0.0.1:${address.port}/ws/classrooms/${id}`,{headers:{Origin:'http://localhost:8080',Cookie:`teeko_session=${'f'.repeat(43)}`}});client.on('error',()=>{});client.on('message',raw=>down.push(JSON.parse(raw.toString()) as Wire));
  await once(client,'open');await waitFor(()=>down.some(e=>e.type==='ready')&&sent.some(e=>e.type==='session.commentary.append'));
  const flush=async()=>{assert(peer);const pong=once(peer,'pong');peer.ping('flush');await pong;await new Promise(resolve=>setTimeout(resolve,30));};
- return {client,down,sent,transcripts,id,flush,
+ return {client,down,sent,transcripts,id,flush,get toolCalls(){return toolCalls;},
   input(sample:number,count=1){for(let i=0;i<count;i++)client.send(JSON.stringify({type:'audio',audio:pcm(sample)}));},
   output(sample:number,ms=100){peer!.send(JSON.stringify({type:'session.output_audio.delta',delta:pcm(sample,ms)}));},
   delegate(){peer!.send(JSON.stringify({type:'session.delegation.created',delegation:{id:'gpt-advance-delegation',target:'client'}}));},
@@ -42,6 +45,18 @@ async function fixture(lab=false,gptAdvanceWaitMs?:number,toolAdvance=false){
   async close(){client.terminate();await owner.close();for(const s of vendor.clients)s.terminate();await new Promise<void>(r=>vendor.close(()=>r()));await new Promise<void>(r=>upHttp.close(()=>r()));await new Promise<void>(r=>app.close(()=>r()));}
  };
 }
+
+test('packaged GPT reading navigation persists the spoken control without a competing delegation',async()=>{
+ const f=await fixture(false,undefined,false,true);
+ try {
+  f.delegate();f.input(1800,3);await f.flush();
+  f.transcript('下一页。');f.input(0,12);
+  await waitFor(()=>f.transcripts.length===1);
+  await f.flush();
+  assert.equal(f.transcripts[0].text,'下一页。');
+  assert.equal(f.toolCalls,0);
+ } finally {await f.close();}
+});
 
 test('GPT automatic advance preserves the current audio until fresh output quiet and browser drain',async()=>{
  const f=await fixture();try{

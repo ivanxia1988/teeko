@@ -8,9 +8,21 @@ import {loadTopicPromptPreview} from '../lib/server/topic-prompt-preview';
 import {spokenUpdate} from '../lib/live-agent';
 import {CLASSROOM_SILENCE_CUE} from '../lib/classroom-cues';
 import {LIVE_ROBOT_HIGHLIGHT_TOOL} from '../lib/server/classroom-live-highlight';
+import {bundledTopicContent} from '../lib/server/topic-content';
 
 const owner = 'e487b951-9846-4921-8cbe-446430defa8c';
 const ordinary = 'e487b951-9846-4921-8cbe-446430defa8d';
+
+test('packaged GPT opening and page change cues retain the current passage in the actual spoken byte budget',async()=>{
+  const {courses}=await bundledTopicContent();
+  const course=courses.find(course=>course.id==='whale-snot-drones');
+  assert(course);
+  const preview=await loadTopicPromptPreview(course.id,owner,[owner],async()=>({course,teacher:null}));
+  assert(preview);
+  assert.match(spokenUpdate(preview.activities[0].opening), /visible mark on "blow \(spray\)".*A humpback whale/);
+  assert.match(preview.activities[1].advance ?? '', /visible mark on "news passage".*58 samples from 26 whales/);
+  assert.doesNotMatch(preview.activities[1].advance ?? '', /visible mark on "blow/);
+});
 
 test('topic prompt preview only reads a published topic for an allowed signed in account', async () => {
   let reads = 0;

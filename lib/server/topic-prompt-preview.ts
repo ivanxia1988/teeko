@@ -6,7 +6,7 @@ import type {FrozenTeacherConfig} from '../teacher-agent';
 import {buildTeacherGuidance, readTeachingState} from '../teacher-instructions';
 import {isTopicCourse, topicIdSchema} from '../topic-learning';
 import type {TopicPromptPreview} from '../topic-prompt-preview';
-import {buildClassroomVoicePrompt, gptClassroomContextText, gptClassroomDelegation} from './classroom-voice-prompt';
+import {buildClassroomVoicePrompt, gptClassroomContextText, gptClassroomDelegation, packagedTopicEntryCue} from './classroom-voice-prompt';
 import {diagnosticEntryAllowlist} from './diagnostic-entry';
 
 type Publication = {
@@ -48,7 +48,8 @@ export async function loadTopicPromptPreview(
     registrationJson: JSON.stringify(delegation, null, 2),
     silenceCue: spokenUpdate(CLASSROOM_SILENCE_CUE),
     activities: voiceModel ? course.steps.map((step, stepIndex) => {
-      const snapshot = {...sample, stepIndex, revision: stepIndex + 1};
+      const snapshot = {...sample, stepIndex, revision: stepIndex + 1,
+        teacherObjectIds: course.topic && step.targetId ? [step.targetId] : []};
       const state = readTeachingState({}, snapshot.profile.level);
       const prompt = buildClassroomVoicePrompt(snapshot, voiceModel, teacher, state);
       const activityDelegation = gptClassroomDelegation(snapshot, prompt.highlightModel);
@@ -62,7 +63,7 @@ export async function loadTopicPromptPreview(
         opening: prompt.initialCue,
         ...(activityDelegation.type === 'responses' ? {backendInstructions: activityDelegation.responses.instructions} : {}),
         contextUpdate: gptClassroomContextText(snapshot, `${sample.id}:${sample.connectionEpoch}:${stepIndex}`, guidance),
-        ...(stepIndex > 0 && !opensWithTool ? {advance: spokenUpdate(classroomAdvanceCue(step.english))} : {}),
+        ...(stepIndex > 0 && !opensWithTool ? {advance: spokenUpdate(packagedTopicEntryCue(snapshot)??classroomAdvanceCue(step.english))} : {}),
       };
     }) : [],
   };

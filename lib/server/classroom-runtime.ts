@@ -16,7 +16,7 @@ import {initializeTeacherAgents,resolvePublishedTeacher} from './admin-service';
 import {buildTeacherInstructions,buildTeacherGuidance,type TeacherTeachingState} from '../teacher-instructions';
 import {DEFAULT_TEACHER_POLICY,type FrozenTeacherConfig} from '../teacher-agent';
 import {createTeacherAssessment,type TeacherAssessment} from './teacher-assessment';
-import {classroomControl} from './classroom-teaching';
+import {classroomControl,readingNavigation} from './classroom-teaching';
 import {getTeacherCredentialRoutes} from './model-credentials-runtime';
 import {ClassroomChalkReader} from './classroom-chalk-reader';
 import {randomUUID} from 'node:crypto';
@@ -107,7 +107,8 @@ export async function openClassroomVoice(request:Request,id:string):Promise<Voic
       await service.transcript(user.id,id,lease.epoch,lease.ownerToken,event);
       if(event.role==='child'&&event.final){
         const apply=()=>service.receiveTranscript(user.id,id,lease.epoch,lease.ownerToken,event,active).then(applied=>refreshClassroom(id,applied==='navigation'?'explicit_navigation':undefined));
-        if(classroomControl(event.text))await apply();else if(lease.snapshot.preferences.provider==='openai'||event.source==='typed')void apply().catch(()=>service.journal(user.id,id,lease.epoch,lease.ownerToken,{eventKey:`apply-failed:${randomUUID()}`,kind:'interaction',actor:'application',status:'failed',name:'interaction_apply',correlationId:event.itemId,details:{errorCode:'UNAVAILABLE'}}).catch(()=>{}));
+        if(classroomControl(event.text)||snapshot.course.topic&&snapshot.preferences.provider==='openai'&&readingNavigation(event.text))await apply();
+        else if(snapshot.preferences.provider==='openai'||event.source==='typed')void apply().catch(()=>service.journal(user.id,id,lease.epoch,lease.ownerToken,{eventKey:`apply-failed:${randomUUID()}`,kind:'interaction',actor:'application',status:'failed',name:'interaction_apply',correlationId:event.itemId,details:{errorCode:'UNAVAILABLE'}}).catch(()=>{}));
       }
     },
     tool:async(name,args,callId,request)=>{if(!await active())throw new ClassroomError('UNAUTHORIZED','登录已失效。',401);return service.tool(user.id,id,lease.epoch,lease.ownerToken,name,args,active,{actor:request?.source==='application'?'application':'teacher',callId,request});},
