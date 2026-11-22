@@ -1,0 +1,167 @@
+{
+  "id": "whale-snot-drones",
+  "version": "1",
+  "title": "无人机收集鲸鱼鼻涕",
+  "subtitle": "Drones and Whale Snot",
+  "description": "看无人机飞进鲸鱼喷出的水雾，读一段改写的新闻，学会 sample，再说说你的猜想。",
+  "words": [
+    "spray",
+    "drone",
+    "sample",
+    "DNA"
+  ],
+  "objectives": [
+    "用英语说出图里看到的一样东西",
+    "读懂一小段新闻并理解 sample",
+    "说出自己的猜想并给一个理由"
+  ],
+  "durationMinutes": 6,
+  "reading": {
+    "sourceTitle": "Why drones are collecting 'whale snot'",
+    "sourceUrl": "https://www.bbc.com/newsround/articles/cm62pwexz1pqo",
+    "attribution": "Original Teeko teaching text and illustrations, rewritten for young learners. Based on BBC Newsround reporting (18 November 2026)."
+  },
+  "pages": [
+    {
+      "id": "whale-look",
+      "image": "/course-assets/whale-snot-drones/1/page-one.svg",
+      "width": 900,
+      "height": 620,
+      "objects": [
+        {
+          "id": "blow",
+          "label": "blow (spray)",
+          "chinese": "鲸鱼喷出的水雾",
+          "box": {
+            "x": 0.393,
+            "y": 0.229,
+            "w": 0.167,
+            "h": 0.319
+          }
+        },
+        {
+          "id": "drone",
+          "label": "drone",
+          "chinese": "无人机",
+          "box": {
+            "x": 0.489,
+            "y": 0.289,
+            "w": 0.178,
+            "h": 0.089
+          }
+        }
+      ]
+    },
+    {
+      "id": "whale-read",
+      "image": "/course-assets/whale-snot-drones/1/page-two.svg",
+      "width": 900,
+      "height": 620,
+      "objects": [
+        {
+          "id": "news-passage",
+          "label": "news passage",
+          "chinese": "新闻短文",
+          "box": {
+            "x": 0.049,
+            "y": 0.239,
+            "w": 0.596,
+            "h": 0.489
+          }
+        },
+        {
+          "id": "sample",
+          "label": "sample",
+          "chinese": "样本",
+          "box": {
+            "x": 0.66,
+            "y": 0.465,
+            "w": 0.302,
+            "h": 0.255
+          }
+        },
+        {
+          "id": "big-question",
+          "label": "big question",
+          "chinese": "大问题",
+          "box": {
+            "x": 0.038,
+            "y": 0.742,
+            "w": 0.924,
+            "h": 0.229
+          }
+        }
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "spot-the-spray",
+      "kind": "speak",
+      "pageId": "whale-look",
+      "targetId": "blow",
+      "english": "Hi, I'm Teeko! Look at this whale's big spray. What is flying in it?",
+      "chinese": "看水雾找无人机",
+      "hint": "You can say: A drone.",
+      "expected": null,
+      "reading": {
+        "phase": "predict",
+        "passage": "A humpback whale breathes out a big spray. What is flying in it?",
+        "goal": "Notice the whale's spray and name the drone with one word or a short phrase.",
+        "teacherNotes": "Greet in one line. Say a whale breathes out a big spray from the top of its head; highlight blow on 'spray'. Ask what is flying in it. When the learner says drone, highlight drone. Any word counts. Answer interruptions briefly, then return to the picture. When done, tell them they can say 'next page'.",
+        "followUp": "Why do you think the drone is there? Just guess!"
+      }
+    },
+    {
+      "id": "read-the-news",
+      "kind": "speak",
+      "pageId": "whale-read",
+      "targetId": "news-passage",
+      "english": "This is the real news. Let's read it together. I'll read first, then you can try one sentence.",
+      "chinese": "跟读新闻短文",
+      "hint": "You can say: The drones caught a little whale snot.",
+      "expected": null,
+      "reading": {
+        "phase": "read",
+        "passage": "Near the coast of Canada, scientists flew drones into the spray of 56 humpback whales. The drones caught a little whale snot. This sample has whale DNA. DNA can help show which whales are family.",
+        "goal": "Follow the short news passage and read or repeat one sentence.",
+        "teacherNotes": "Highlight news-passage, then read it slowly. Say this part is fact from the news, and check the learner's page-one guess. If they laugh at 'whale snot', enjoy it. Invite one sentence; repeating after you is fine. Answer questions simply, then come back to the passage. Correct pronunciation at most once.",
+        "followUp": "What did the drones catch?"
+      }
+    },
+    {
+      "id": "explain-sample",
+      "kind": "speak",
+      "pageId": "whale-read",
+      "targetId": "sample",
+      "english": "Here is our key word: sample. A sample is a small bit of something that scientists study. What sample did the drones get?",
+      "chinese": "认识关键词 sample",
+      "hint": "You can say: Whale snot!",
+      "expected": null,
+      "reading": {
+        "phase": "explain",
+        "passage": "This sample has whale DNA. DNA can help show which whales are family.",
+        "goal": "Understand the word sample and use it in a short answer.",
+        "teacherNotes": "Highlight sample on the key word card while saying 'sample'. Give one easy example: a doctor can test a small drop of blood as a sample. Link back: the whale snot is the sample. If asked about DNA, say it is a body's code that families share. Keep it short and return to the word.",
+        "followUp": "Can you say a short sentence with sample?"
+      }
+    },
+    {
+      "id": "family-or-friends",
+      "kind": "listen",
+      "pageId": "whale-read",
+      "targetId": "big-question",
+      "english": "Scientists don't know yet. What do you think: are whales that look for food together family or friends?",
+      "chinese": "聊聊你的猜想",
+      "hint": "You can say: I think they are family.",
+      "expected": null,
+      "reading": {
+        "phase": "chat",
+        "passage": "Big question: Are whales that look for food together family or friends? Scientists don't know yet.",
+        "goal": "Share an opinion with one reason, and know it is a guess, not a fact.",
+        "teacherNotes": "Highlight big-question. Say this is a guess: scientists are still finding out. Accept family, friends or both, and ask for one reason. Model 'I think... because...'. If the learner imagines whale names or a whale party, enjoy it and call it imagination. Let the learner choose when to finish.",
+        "followUp": "Why do you think so?"
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+  <title>A drone flies in a whale's spray</title>
+  <desc>A humpback whale breathes out a big spray from the top of its head. A small orange drone is flying in the spray.</desc>
+  <rect width="900" height="620" rx="28" fill="#fdf5e7"/>
+  <text x="56" y="92" fill="#362b20" font-family="Helvetica, Arial, sans-serif" font-size="46" font-weight="bold">Drones and Whale Snot</text>
+  <text x="56" y="126" fill="#7a6a58" font-family="Helvetica, Arial, sans-serif" font-size="18">News: BBC Newsround, 18 November 2026</text>
+  <rect x="40" y="378" width="820" height="78" rx="18" fill="#5aa3c9"/>
+  <path d="M288 404 Q425 272 568 326 Q650 350 716 404 Z" fill="#3d556b" stroke="#25384a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M600 338 L628 312 L640 352 Z" fill="#3d556b" stroke="#25384a" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="425" cy="333" rx="9" ry="4" fill="#1b2a38"/>
+  <path d="M270 404 Q300 392 330 404 M680 404 Q710 392 740 404" fill="none" stroke="#eaf6fc" stroke-width="4" stroke-linecap="round"/>
+  <path d="M70 420 q25 -10 50 0 t50 0 M760 432 q25 -10 50 0 t50 0 M200 440 q25 -10 50 0" fill="none" stroke="#b8dcef" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="425" cy="318" r="14" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="418" cy="292" r="19" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="432" cy="266" r="22" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="410" cy="242" r="25" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="446" cy="234" r="27" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="404" cy="208" r="30" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="450" cy="200" r="32" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="426" cy="180" r="30" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="384" cy="186" r="22" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="474" cy="178" r="22" fill="#eaf6fc" stroke="#9cc7de" stroke-width="3"/>
+  <circle cx="425" cy="318" r="11" fill="#eaf6fc"/>
+  <circle cx="418" cy="292" r="16" fill="#eaf6fc"/>
+  <circle cx="432" cy="266" r="19" fill="#eaf6fc"/>
+  <circle cx="410" cy="242" r="22" fill="#eaf6fc"/>
+  <circle cx="446" cy="234" r="24" fill="#eaf6fc"/>
+  <circle cx="404" cy="208" r="27" fill="#eaf6fc"/>
+  <circle cx="450" cy="200" r="29" fill="#eaf6fc"/>
+  <circle cx="426" cy="180" r="27" fill="#eaf6fc"/>
+  <circle cx="384" cy="186" r="19" fill="#eaf6fc"/>
+  <circle cx="474" cy="178" r="19" fill="#eaf6fc"/>
+  <g stroke="#2b3440" stroke-width="4" stroke-linecap="round">
+    <line x1="472" y1="202" x2="502" y2="214"/><line x1="568" y1="202" x2="538" y2="214"/>
+    <line x1="472" y1="202" x2="472" y2="194"/><line x1="568" y1="202" x2="568" y2="194"/></g>
+  <ellipse cx="472" cy="192" rx="24" ry="5" fill="#9aa7b4" stroke="#2b3440" stroke-width="3"/>
+  <ellipse cx="568" cy="192" rx="24" ry="5" fill="#9aa7b4" stroke="#2b3440" stroke-width="3"/>
+  <rect x="494" y="204" width="52" height="22" rx="8" fill="#ed8745" stroke="#2b3440" stroke-width="3"/>
+  <circle cx="520" cy="215" r="4" fill="#2b3440"/>
+  <text x="56" y="522" fill="#362b20" font-family="Helvetica, Arial, sans-serif" font-size="30">A humpback whale breathes out a big spray.</text>
+  <text x="56" y="566" fill="#c4561c" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="bold">What is flying in it?</text>
+</svg>
