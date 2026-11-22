@@ -17,9 +17,9 @@
   ],
   "durationMinutes": 6,
   "reading": {
-    "sourceTitle": "Why drones are collecting 'whale snot'",
-    "sourceUrl": "https://www.bbc.com/newsround/articles/cm62pwexz1pqo",
-    "attribution": "Original Teeko teaching text and illustrations, rewritten for young learners. Based on BBC Newsround reporting (18 November 2026)."
+    "sourceTitle": "Whole genome sequencing using whale snot",
+    "sourceUrl": "https://news.st-andrews.ac.uk/archive/whole-genome-sequencing-using-whale-snot/",
+    "attribution": "Original Teeko teaching text and illustrations based on research reported by the University of St Andrews (17 November 2026)."
   },
   "pages": [
     {
@@ -123,7 +123,7 @@
       "expected": null,
       "reading": {
         "phase": "read",
-        "passage": "Near the coast of Canada, scientists flew drones into the spray of 56 humpback whales. The drones caught a little whale snot. This sample has whale DNA. DNA can help show which whales are family.",
+        "passage": "Near the coast of Canada, scientists flew drones into the spray of humpback whales. They got 58 samples from 26 whales. A sample can have whale DNA. DNA can help show which whales are family.",
         "goal": "Follow the short news passage and read or repeat one sentence.",
         "teacherNotes": "Highlight news-passage, then read it slowly. Say this part is fact from the news, and check the learner's page-one guess. If they laugh at 'whale snot', enjoy it. Invite one sentence; repeating after you is fine. Answer questions simply, then come back to the passage. Correct pronunciation at most once.",
         "followUp": "What did the drones catch?"

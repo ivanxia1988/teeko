@@ -18,7 +18,7 @@ test('topic prompt preview only reads a published topic for an allowed signed in
   for (const account of [null, ordinary]) {
     assert.equal(await loadTopicPromptPreview('topic-robot', account, [owner], read), undefined);
   }
-  assert.equal(await loadTopicPromptPreview('picnic', owner, [owner], read), undefined);
+  assert.equal(await loadTopicPromptPreview('../picnic', owner, [owner], read), undefined);
   assert.equal(await loadTopicPromptPreview('topic-robot', owner, [owner, 'invalid'], read), undefined);
   assert.equal(reads, 0);
   const result = await loadTopicPromptPreview('topic-robot', owner, [owner], read);
@@ -28,6 +28,19 @@ test('topic prompt preview only reads a published topic for an allowed signed in
   assert.match(result!.activities[0].opening, /Begin without waiting for the learner to speak/);
   assert.match(result!.activities[2].advance!, /This robot can fly and swim/);
   assert.equal(result!.silenceCue, spokenUpdate(CLASSROOM_SILENCE_CUE));
+});
+
+test('prompt preview accepts a published course package and rejects an unmarked legacy course', async () => {
+  const course = {...TOPIC_PICNIC_COURSE, id: 'seabird-flights'};
+  const readLegacy = async () => ({course, teacher: null});
+  assert.equal(await loadTopicPromptPreview(course.id, owner, [owner], readLegacy), undefined);
+  const result = await loadTopicPromptPreview(course.id, owner, [owner], async () => ({
+    course: {...course, topic: {category: 'science', difficulty: 'starter'}},
+    teacher: null,
+  }));
+  assert.ok(result);
+  assert.equal(result.activities.length, course.steps.length);
+  assert.match(result.activities[0].instructions, /TOPIC LEARNING/);
 });
 
 test('the robot preview shows the complete wire registration and original prompt text', async () => {

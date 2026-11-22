@@ -5,8 +5,10 @@ import { accountOrigin, getAccountService } from './account-runtime';
 import { readRuntimeEnv } from './runtime-env';
 import { ClassroomError, ClassroomService } from './classroom-service';
 import { publishTrialCourses } from './course-catalog';
-import { createClassroomHandler } from './classroom-http';
+import { createClassroomHandler, publicTopicCatalog } from './classroom-http';
 import type { ClassroomSnapshot } from '../classroom-contract';
+import {TOPIC_CATALOG} from '../topic-learning';
+import {bundledTopicContent} from './topic-content';
 import type { VoiceLease } from './classroom-sockets';
 import { refreshClassroom } from './classroom-events';
 import {createOpenAIClassroomVision} from './classroom-vision-openai';
@@ -23,7 +25,8 @@ let service:ClassroomService|undefined;
 let publishing:Promise<void>|undefined;
 export async function getClassroomService(){
   const pool=getAccountPool(readRuntimeEnv('DATABASE_URL'));
-  if(!publishing)publishing=publishTrialCourses(pool).then(()=>initializeTeacherAgents(pool)).catch(error=>{publishing=undefined;throw error;});
+  const content=await bundledTopicContent();
+  if(!publishing)publishing=publishTrialCourses(pool,content.courses).then(()=>initializeTeacherAgents(pool)).catch(error=>{publishing=undefined;throw error;});
   await publishing;
   const assess:TeacherAssessment=async(input,signal)=>{
     const provider=input.snapshot.preferences.provider,model=input.config.routes[provider]?.reasoning?.model;
@@ -31,7 +34,7 @@ export async function getClassroomService(){
     const credential=await getTeacherCredentialRoutes().forModel(provider,'reasoning',input.config.routes[provider]!.reasoning);
     return createTeacherAssessment({provider,model,...credential})(input,signal);
   };
-  service??=new ClassroomService(pool,{assess});return service;
+  service??=new ClassroomService(pool,{assess,topicCards:[...TOPIC_CATALOG,...content.cards],bundledVersions:new Map(content.courses.map(course=>[course.id,course.version]))});return service;
 }
 export async function classroomProviders(config:FrozenTeacherConfig|null){
   const configured=await getTeacherCredentialRoutes().availability(config);
@@ -43,8 +46,10 @@ export async function classroomProviders(config:FrozenTeacherConfig|null){
 }
 export async function handleClassroomRequest(request:Request){
   try{
-    const origin=accountOrigin(),accounts=getAccountService(),service=await getClassroomService();
     const path=new URL(request.url).pathname;
+    if(path==='/api/v1/topics'&&request.method==='GET')
+      return await publicTopicCatalog(request,async()=>[...TOPIC_CATALOG,...(await bundledTopicContent()).cards]);
+    const origin=accountOrigin(),accounts=getAccountService(),service=await getClassroomService();
     const needsProviders=path==='/api/v1/classroom-options'||path==='/api/v1/classrooms'&&request.method==='POST';
     const providers=needsProviders?await classroomProviders(await resolvePublishedTeacher(getAccountPool(readRuntimeEnv('DATABASE_URL')))):[];
     return await createClassroomHandler({origin,service,authenticate:req=>accounts.session(accountCookie(req,'teeko_session')),providers:()=>providers,limit:id=>accounts.limit(`classroom-http:${id}`,90,60),limitDiagnostics:id=>accounts.limit(`classroom-diagnostics:${id}`,90,60),changed:refreshClassroom})(request);

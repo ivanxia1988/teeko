@@ -1,7 +1,7 @@
 # Teeko 协作约定
 
-- [教材制作手册](courses/AUTHORING.md) 定义课程草稿的结构、元素 ID、教案和素材来源。教材作者把每版交付放在 `courses/drafts/<course-id>/<version>/`。
-- 应用维护者运行 `npm run courses:check -- <草稿目录>`，复核素材许可、标注位置及教案，再接入课程目录。已发布课程通过新版本修订。
+- [教材制作手册](courses/AUTHORING.md) 定义课程包的结构、元素 ID、教案和素材来源。待审稿可在 `courses/drafts/` 预审，交付 PR 把完整课程包放到 `courses/topics/<course-id>/<version>/`。
+- 在 PR 中运行 `npm run courses:check -- <课程包目录>` 并复核素材许可、标注位置及教案。合并后应用随当前部署加载目录与素材。已发布课程通过新版本修订。
 - 应用负责账号权限、当前课件、语音工具注册和结果确认。学生在主题课堂用语音互动。
 - 每台设备使用不同分支，改动保持小而可审阅。写代码前说明范围、文件和验证方式。优先跑相关测试，再跑 `npm run typecheck`。
 - 服务凭据放在各设备自己的环境变量。提交中只放配置模板和合成测试数据。

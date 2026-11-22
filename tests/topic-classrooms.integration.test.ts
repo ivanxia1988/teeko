@@ -2,10 +2,12 @@ import test,{type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
 import {Pool} from 'pg';
 import {ClassroomService,DEFAULT_CLASSROOM_PREFERENCES} from '../lib/server/classroom-service';
 import {publishTrialCourses} from '../lib/server/course-catalog';
-import {topicHistoryResponseSchema} from '../lib/topic-learning';
+import {loadTopicContent} from '../lib/server/topic-content';
+import {TOPIC_CATALOG,topicHistoryResponseSchema} from '../lib/topic-learning';
 
 const database=process.env.TEST_DATABASE_URL;
 if(database){const url=new URL(database);if(!['127.0.0.1','localhost','[::1]'].includes(url.hostname)||!/test/.test(url.pathname))throw new Error('A loopback disposable test database is required.');}
@@ -42,6 +44,42 @@ test('published topic courses are isolated and each new session starts from its 
  await service.action(owner,legacy.id,{eventId:randomUUID(),expectedRevision:moved.revision,type:'end'});
  assert.equal((await service.create(owner,'picnic')).stepIndex,1);
  await pool.query("DELETE FROM teeko_courses WHERE id='topic-picnic'");assert.deepEqual((await service.topics()).map(topic=>topic.id),['topic-robot']);
+});
+
+test('a packaged topic is discoverable, opens its bundled version, and saves topic history',{skip:!database},async t=>{
+ const {pool,owner}=await fixture(t);
+ const content=await loadTopicContent(fileURLToPath(new URL('../courses/topics',import.meta.url)));
+ const course=content.courses.findLast(item=>item.id==='whale-snot-drones');
+ assert(course);
+ await publishTrialCourses(pool,content.courses);
+ const version='database-only-test';
+ await pool.query("INSERT INTO teeko_courses(id,version,manifest,checksum,published_at) VALUES($1,$2,$3,$4,now()+interval '1 day')",[
+  course.id,version,JSON.stringify({...course,version}),'synthetic-unbundled-version',
+ ]);
+ const service=new ClassroomService(pool,{
+  topicCards:[...TOPIC_CATALOG,...content.cards],
+  bundledVersions:new Map(content.courses.map(item=>[item.id,item.version])),
+ });
+ assert.equal((await service.topics()).find(card=>card.id===course.id)?.coverImage,course.pages[0].image);
+ assert.deepEqual((await service.courses(owner)).courses.map(card=>card.id),['picnic','robot-reading']);
+
+ const first=await service.create(owner,course.id);
+ assert.equal(first.course.version,course.version);
+ assert.equal(first.course.steps[first.stepIndex].pageId,course.pages[0].id);
+ const {snapshot}=await service.claim(owner,first.id);
+ await assert.rejects(service.action(owner,first.id,{
+  eventId:randomUUID(),expectedRevision:snapshot.revision,type:'select',objectIds:['blow'],
+ }),{code:'ACTION_UNAVAILABLE'});
+ const advanced=await service.action(owner,first.id,{eventId:randomUUID(),expectedRevision:snapshot.revision,type:'next'});
+ assert.equal(advanced.course.steps[advanced.stepIndex].pageId,course.pages[1].id);
+ await service.action(owner,first.id,{eventId:randomUUID(),expectedRevision:advanced.revision,type:'end'});
+
+ const history=topicHistoryResponseSchema.parse({ok:true,...await service.topicHistory(owner)});
+ assert.deepEqual(history.records.map(record=>[record.id,record.courseId,record.courseTitle]),[[first.id,course.id,course.title]]);
+ assert.equal((await service.courses(owner)).recentClassrooms.length,0);
+ const reopened=await service.create(owner,course.id);
+ assert.equal(reopened.stepIndex,0);
+ assert.notEqual(reopened.id,first.id);
 });
 
 test('topic history paginates persisted own records with stable ties and separate advice status',{skip:!database},async t=>{

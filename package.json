@@ -9,7 +9,7 @@
     "install:ci": "node scripts/install-ci.mjs",
     "dev": "node scripts/run-framework.mjs dev",
     "build": "node scripts/run-framework.mjs build",
-    "build:node": "node scripts/run-node-framework.mjs build",
+    "build:node": "npm run courses:check:catalog && node scripts/run-node-framework.mjs build",
     "start:node": "node scripts/run-node-framework.mjs start",
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
@@ -19,7 +19,8 @@
     "postinstall": "node scripts/prepare-pdf.mjs",
     "db:migrate:accounts": "node scripts/migrate-accounts.mjs",
     "invitations": "node --import tsx scripts/manage-invitations.ts",
-    "courses:check": "node --import tsx scripts/check-course-draft.ts"
+    "courses:check": "node --import tsx scripts/check-course-draft.ts",
+    "courses:check:catalog": "node --import tsx scripts/check-topic-catalog.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

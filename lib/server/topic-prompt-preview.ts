@@ -4,7 +4,7 @@ import {sanitizeClassroomJournalText} from '../classroom-journal';
 import {spokenUpdate} from '../live-agent';
 import type {FrozenTeacherConfig} from '../teacher-agent';
 import {buildTeacherGuidance, readTeachingState} from '../teacher-instructions';
-import {isTopicCourseId} from '../topic-learning';
+import {isTopicCourse, topicIdSchema} from '../topic-learning';
 import type {TopicPromptPreview} from '../topic-prompt-preview';
 import {buildClassroomVoicePrompt, gptClassroomContextText, gptClassroomDelegation} from './classroom-voice-prompt';
 import {diagnosticEntryAllowlist} from './diagnostic-entry';
@@ -23,9 +23,9 @@ export async function loadTopicPromptPreview(
   enabledAccountIds: readonly string[],
   readPublished: (topicId: string) => Promise<Publication | null>,
 ): Promise<TopicPromptPreview | undefined> {
-  if (!isTopicCourseId(topicId) || !accountId || !diagnosticEntryAllowlist(enabledAccountIds).has(accountId.toLowerCase())) return;
+  if (!topicIdSchema.safeParse(topicId).success || !accountId || !diagnosticEntryAllowlist(enabledAccountIds).has(accountId.toLowerCase())) return;
   const published = await readPublished(topicId);
-  if (!published || published.course.id !== topicId) return;
+  if (!published || published.course.id !== topicId || !isTopicCourse(published.course)) return;
 
   const {course} = published;
   const release = published.teacher;

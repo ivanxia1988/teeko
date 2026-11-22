@@ -7,12 +7,12 @@ import { z } from 'zod';
 import { accountSubmissionError, passwordSubmissionError, type AccountIntent } from '../product/account-state';
 import { accountRequest, accountState, completed, destination, errorMessage, sentCode, verifiedCode } from '../product/account-request';
 import { TopicAgreementNotice } from './topic-agreement-notice';
-import { getTopic } from '../../lib/topic-learning';
+import { topicIdSchema } from '../../lib/topic-learning';
 
 export function topicAccountDestination(value?: string) {
   if (value === '/topics' || value === '/topics/me') return value;
   const topic = value?.match(/^\/topics\/([a-z0-9-]+)\?start=1$/);
-  if (topic && getTopic(topic[1])) return value!;
+  if (topic && topicIdSchema.safeParse(topic[1]).success && !['classroom', 'login', 'me'].includes(topic[1])) return value!;
   const classroom = value?.match(/^\/topics\/classroom\/([^/?#]+)$/);
   if (classroom && z.string().uuid().safeParse(classroom[1]).success) return value!;
   return '/topics';

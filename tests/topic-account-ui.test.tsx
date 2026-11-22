@@ -14,6 +14,7 @@ type Handler = (path: string, body?: Record<string, unknown>) => Response | Prom
 let handler: Handler;
 const success = (value = {}) => Response.json({ ok: true, ...value });
 const target = '/topics/topic-robot?start=1';
+const newTopicTarget = '/topics/seabird-flights?start=1';
 beforeEach(() => {
   calls.length = 0;
   handler = path => path.endsWith('/state') ? success({ user: null, flow: null }) : path.endsWith('/cancel') ? success() : Response.json({ ok: false, error: { code: 'UNAVAILABLE', message: '账号服务暂不可用。' } }, { status: 503 });
@@ -28,20 +29,20 @@ async function loaded() { await waitFor(() => assert(!screen.queryByText('正在
 const fill = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label, { exact: true }), { target: { value } });
 
 test('account destinations allow only catalog startup, personal history and exact classroom paths', () => {
-  for (const path of ['/topics', '/topics/me', target, '/topics/topic-picnic?start=1', '/topics/classroom/483c2055-90e2-4d27-b56c-f86bee1db2b8']) assert.equal(topicAccountDestination(path), path);
-  for (const path of ['https://elsewhere.test/topics', '//elsewhere.test', '/topics/unknown?start=1', '/topics/topic-robot?start=1&next=https://elsewhere.test', '/topics/%2f%2felsewhere.test', '/topics/classroom/not-a-uuid', '/courses', '/topics/me#anything']) assert.equal(topicAccountDestination(path), '/topics');
+  for (const path of ['/topics', '/topics/me', target, newTopicTarget, '/topics/topic-picnic?start=1', '/topics/classroom/483c2055-90e2-4d27-b56c-f86bee1db2b8']) assert.equal(topicAccountDestination(path), path);
+  for (const path of ['https://elsewhere.test/topics', '//elsewhere.test', '/topics/login?start=1', '/topics/classroom?start=1', '/topics/me?start=1', '/topics/-topic-?start=1', '/topics/topic-robot?start=1&next=https://elsewhere.test', '/topics/%2f%2felsewhere.test', '/topics/classroom/not-a-uuid', '/courses', '/topics/me#anything']) assert.equal(topicAccountDestination(path), '/topics');
   assert.equal(new URL(topicAccountHref('recover', target), 'https://example.test').searchParams.get('next'), target);
 });
 
 test('existing login and recovery links retain the selected topic and shared login returns there', async () => {
   const destinations: string[] = [];
   handler = path => path.endsWith('/state') ? success({ user: null, flow: null }) : success({ next: '/courses' });
-  render(<TopicAccount next={target} navigate={path => destinations.push(path)} />); await loaded();
-  assert.equal(screen.getByRole('link', { name: '注册账号' }).getAttribute('href'), topicAccountHref('register', target));
-  assert.equal(screen.getByRole('link', { name: '忘记密码？' }).getAttribute('href'), topicAccountHref('recover', target));
+  render(<TopicAccount next={newTopicTarget} navigate={path => destinations.push(path)} />); await loaded();
+  assert.equal(screen.getByRole('link', { name: '注册账号' }).getAttribute('href'), topicAccountHref('register', newTopicTarget));
+  assert.equal(screen.getByRole('link', { name: '忘记密码？' }).getAttribute('href'), topicAccountHref('recover', newTopicTarget));
   fill('邮箱', 'learner@example.com'); fill('密码', 'fixture-password');
   fireEvent.click(screen.getByRole('button', { name: '登录并继续' }));
-  await waitFor(() => assert.deepEqual(destinations, [target]));
+  await waitFor(() => assert.deepEqual(destinations, [newTopicTarget]));
   assert(calls.some(call => call.path === '/api/v1/auth/login'));
   assert.equal(dom.window.localStorage.length, 0);
 });
