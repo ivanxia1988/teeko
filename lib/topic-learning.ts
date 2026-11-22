@@ -1,7 +1,9 @@
 import {z} from 'zod';
+import type {PublishedCourse} from './classroom-contract';
 
+export const topicIdSchema=z.string().max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 export const topicCardSchema=z.object({
- id:z.enum(['topic-robot','topic-picnic']),title:z.string(),subtitle:z.string(),description:z.string(),
+ id:topicIdSchema,title:z.string(),subtitle:z.string(),description:z.string(),
  category:z.enum(['science','life']),categoryLabel:z.string(),difficulty:z.enum(['starter','intermediate']),difficultyLabel:z.string(),
  durationMinutes:z.number().positive(),coverImage:z.string(),objectives:z.array(z.string()),words:z.array(z.string()),
  preview:z.object({image:z.string(),width:z.number().positive(),height:z.number().positive(),passage:z.string(),heading:z.string().optional()}),
@@ -31,6 +33,7 @@ export const TOPIC_CATALOG:TopicCard[]=[
 ];
 const topicIds=new Set<string>(TOPIC_CATALOG.map(topic=>topic.id));
 export const isTopicCourseId=(id:string):boolean=>topicIds.has(id);
+export const isTopicCourse=(course:Pick<PublishedCourse,'id'|'topic'>):boolean=>Boolean(course.topic)||isTopicCourseId(course.id);
 export const getTopic=(id:string):TopicCard|undefined=>TOPIC_CATALOG.find(topic=>topic.id===id);
 export const topicCatalogResponseSchema=z.object({ok:z.literal(true),topics:z.array(topicCardSchema)});
 const cursorSchema=z.object({endedAt:z.string().datetime(),id:z.string().uuid()}).strict();

@@ -2,7 +2,7 @@ import {z} from 'zod';
 import type {ClassroomSnapshot} from './classroom-contract';
 import {DEFAULT_TEACHER_POLICY,DEFAULT_TEACHER_SYSTEM_PROMPT,type FrozenTeacherConfig,type TeacherPolicy} from './teacher-agent';
 import {classroomReadingReference,isOpenClassroomConversation} from './classroom-reading';
-import {isTopicCourseId} from './topic-learning';
+import {isTopicCourse} from './topic-learning';
 
 export const TOPIC_INTERACTION_POLICY='TOPIC LEARNING — VOICE INPUT ONLY\nThis is one independent topic session. The learner answers and asks questions by speaking; there are no learner click, selection, pen or drawing controls. Never ask them to tap, click, circle, draw or press a next-page button. Explain the supplied current material in brief pieces, and invite a spoken response. You may demonstrate existing objects using highlight_objects and wait for its confirmed result. Keep listening when interrupted, answer the question, then gently return to the current idea. Use the supplied lesson goal and valid spoken evidence for progress; only an application-confirmed update changes the activity or page. A spoken request to continue is supported. Camera use is optional, and absence alone never stops the lesson. Each completed session stands alone, without required homework, a next unit or assumed memory of earlier sessions.';
 
@@ -51,7 +51,7 @@ export function buildTeacherInstructions(snapshot:ClassroomSnapshot,config:Froze
  const policy=config?.policy??DEFAULT_TEACHER_POLICY,state=teachingState??readTeachingState({},snapshot.profile.level),pacing=policy.levels[state.level];
  const step=snapshot.course.steps[snapshot.stepIndex],hintCount=state.hints[step?.id??'']??0;
  const reading=classroomReadingReference(snapshot);
- const interactionPolicy=isTopicCourseId(snapshot.course.id)?`${TOPIC_INTERACTION_POLICY}\n\n`:'';
+ const interactionPolicy=isTopicCourse(snapshot.course)?`${TOPIC_INTERACTION_POLICY}\n\n`:'';
  const currentTask=reading?{...step,reading,expected:undefined,answerScope:'reading_participation'}:step?.kind==='speak'&&step.targetId===null?{...step,expected:undefined,answerScope:'open_expression'}:step??null;
  const styles={gentle:'Respond warmly, acknowledge the meaning first and model naturally. Do not require another attempt.',focused:'Make the current learning purpose clear. Correct only one relevant point, then invite an optional attempt.',strict:'Be clear and consistent about the goal, but never shame, punish, interrupt more often or force repetition. Respect refusal and skipping.'};
  const language=snapshot.preferences.language==='english'?'English only. Simplify English, give examples or refer to pictures when support is needed; do not override the learner’s language preference.':'Short English first; brief Chinese is allowed when requested or necessary to understand. Return naturally to usable English.';
@@ -64,7 +64,7 @@ export function buildTeacherGuidance(snapshot:ClassroomSnapshot,config:FrozenTea
  const reading=classroomReadingReference(snapshot);
  if(reading){
   const guidance={effectiveLevel:state.level,pacing:policy.levels[state.level],language:snapshot.preferences.language,reading,
-   ...(isTopicCourseId(snapshot.course.id)?{interaction:'voice_only: no learner click or drawing controls. Invite spoken answers; teacher may highlight known objects. Pages change only after application confirmation.'}:{}),
+   ...(isTopicCourse(snapshot.course)?{interaction:'voice_only: no learner click or drawing controls. Invite spoken answers; teacher may highlight known objects. Pages change only after application confirmation.'}:{}),
    participation:'Reading is voluntary and unassessed. Use the current passage before asking one question. A recital, question or help request is not understanding. Never announce mastery or end automatically.',
    help:{used:hints,limit:policy.hintLimit,next:'offer a clue, choice or listening; respect refusal'},
    correction:{mode:policy.correction,rule:'Repair one clear sentence error naturally, preserving the learner meaning. No forced repetition.'},

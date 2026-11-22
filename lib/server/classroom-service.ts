@@ -23,7 +23,7 @@ import {DEFAULT_TEACHER_POLICY} from '../teacher-agent';
 import {readTeachingState,recordTeachingEvidence,teacherAssessmentResultSchema,type TeacherAssessmentResult} from '../teacher-instructions';
 import type {TeacherAssessment} from './teacher-assessment';
 import type { ClassroomAction, ClassroomFeedback, ClassroomOutcome, ClassroomPreferences, ClassroomSnapshot, CourseCard, PublishedCourse, RecentClassroom } from '../classroom-contract';
-import {TOPIC_CATALOG,isTopicCourseId,parseTopicHistoryQuery,encodeTopicHistoryCursor,type TopicCard,type TopicHistoryResponse,type TopicHistoryRecord} from '../topic-learning';
+import {TOPIC_CATALOG,isTopicCourse,parseTopicHistoryQuery,encodeTopicHistoryCursor,type TopicCard,type TopicHistoryResponse,type TopicHistoryRecord} from '../topic-learning';
 
 export class ClassroomError extends Error {
   constructor(public code:string,message:string,public status=409){super(message);}
@@ -40,7 +40,7 @@ type Row = {
 type Transcript={role:'child'|'teacher';text:string;final:boolean;itemId?:string;contextKey?:string;source?:'speech'|'typed'};
 type ChildEvidence={item_id:string;text:string;created_at:Date;source:'speech'|'typed'};
 type HighlightIntent={type:'highlight';objectIds:string[];itemIds:string[]}|{type:'clarify'};
-type Options={now?:()=>Date;maxSeconds?:number;dailySeconds?:number;assess?:TeacherAssessment};
+type Options={now?:()=>Date;maxSeconds?:number;dailySeconds?:number;assess?:TeacherAssessment;topicCards?:readonly TopicCard[];bundledVersions?:ReadonlyMap<string,string>};
 type Assessed={itemId:string;contextKey:string;createdAt:Date;result:TeacherAssessmentResult};
 type AssessmentFlight={itemId:string;contextKey:string;controller:AbortController;promise:Promise<Assessed|null>;expires:ReturnType<typeof setTimeout>};
 type ToolOutput=ClassroomToolOutput;
@@ -68,8 +68,11 @@ const highlightClarification:ToolOutput={status:'conversation',english:'The lear
 export class ClassroomService {
   private now:()=>Date; private maxMs:number; private dailyMs:number; private hasExplicitMax:boolean;
   private assess?:TeacherAssessment;private assessments=new Map<string,AssessmentFlight>();
+  private topicCards:readonly TopicCard[];
+  private bundledVersions?:ReadonlyMap<string,string>;
   constructor(private pool:Pool,options:Options={}){
     this.assess=options.assess;this.now=options.now??(()=>new Date()); this.maxMs=(options.maxSeconds??900)*1000; this.dailyMs=(options.dailySeconds??3600)*1000;this.hasExplicitMax=options.maxSeconds!==undefined;
+    this.topicCards=options.topicCards??TOPIC_CATALOG;this.bundledVersions=options.bundledVersions;
     if(!Number.isFinite(this.maxMs)||!Number.isFinite(this.dailyMs)||this.maxMs<=0||this.dailyMs<this.maxMs) throw new Error('Invalid classroom limits.');
   }
   private async tx<T>(accountId:string,work:(db:PoolClient)=>Promise<T>):Promise<T>{
@@ -151,9 +154,9 @@ export class ClassroomService {
   async preferences(accountId:string):Promise<ClassroomPreferences>{const result=await this.pool.query('SELECT preferences FROM teeko_preferences WHERE account_id=$1',[accountId]);return result.rows[0]?.preferences??{...DEFAULT_CLASSROOM_PREFERENCES};}
   async savePreferences(accountId:string,preferences:ClassroomPreferences){await this.pool.query('INSERT INTO teeko_preferences(account_id,preferences,updated_at) VALUES($1,$2,$3) ON CONFLICT(account_id) DO UPDATE SET preferences=EXCLUDED.preferences,updated_at=EXCLUDED.updated_at',[accountId,JSON.stringify(preferences),this.now()]);return preferences;}
   async topics():Promise<TopicCard[]>{
-    const published=await this.pool.query('SELECT DISTINCT id FROM teeko_courses WHERE id=ANY($1::text[])',[TOPIC_CATALOG.map(topic=>topic.id)]);
+    const published=await this.pool.query('SELECT DISTINCT id FROM teeko_courses WHERE id=ANY($1::text[])',[this.topicCards.map(topic=>topic.id)]);
     const available=new Set(published.rows.map(row=>row.id));
-    return TOPIC_CATALOG.filter(topic=>available.has(topic.id)).map(topic=>structuredClone(topic));
+    return this.topicCards.filter(topic=>available.has(topic.id)).map(topic=>structuredClone(topic));
   }
   async topicHistory(accountId:string,input:unknown={}):Promise<Omit<TopicHistoryResponse,'ok'>>{
     const parsed=parseTopicHistoryQuery(input);if(!parsed.ok)throw new ClassroomError('INVALID_INPUT','请求内容无效，请重新操作。',400);
@@ -166,7 +169,7 @@ export class ClassroomService {
         j.status AS note_status,(SELECT count(*)::integer FROM teeko_classroom_note_records n WHERE n.classroom_id=r.id) AS note_count
         FROM teeko_classrooms r JOIN teeko_courses c ON c.id=r.course_id AND c.version=r.course_version
         LEFT JOIN teeko_classroom_note_jobs j ON j.classroom_id=r.id
-        WHERE r.account_id=$1 AND r.course_id=ANY($2::text[]) AND r.status='ended' AND r.ended_at IS NOT NULL
+        WHERE r.account_id=$1 AND (r.course_id=ANY($2::text[]) OR c.manifest ? 'topic') AND r.status='ended' AND r.ended_at IS NOT NULL
           AND ($3::timestamptz IS NULL OR (r.ended_at,r.id)<($3::timestamptz,$4::uuid))
         ORDER BY r.ended_at DESC,r.id DESC LIMIT $5`,[accountId,TOPIC_CATALOG.map(topic=>topic.id),cursor?.endedAt??null,cursor?.id??null,pageSize+1]);
       const records:TopicHistoryRecord[]=result.rows.slice(0,pageSize).map(row=>({
@@ -181,14 +184,14 @@ export class ClassroomService {
   async courses(accountId:string){return this.tx(accountId,async db=>{
     const active=await db.query("SELECT * FROM teeko_classrooms WHERE account_id=$1 AND status<>'ended' FOR UPDATE",[accountId]);
     for(const row of active.rows){await this.settle(db,row);await this.save(db,row);}
-    const result=await db.query('SELECT DISTINCT ON(id) manifest FROM teeko_courses WHERE NOT(id=ANY($1::text[])) ORDER BY id,published_at DESC',[TOPIC_CATALOG.map(topic=>topic.id)]);
+    const result=await db.query("SELECT DISTINCT ON(id) manifest FROM teeko_courses WHERE NOT(id=ANY($1::text[]) OR manifest ? 'topic') ORDER BY id,published_at DESC",[TOPIC_CATALOG.map(topic=>topic.id)]);
     const history=await db.query('SELECT course_id,step_index,end_reason FROM teeko_classrooms WHERE account_id=$1 ORDER BY recorded_at DESC',[accountId]);
     const courses:CourseCard[]=result.rows.map(({manifest:course}:{manifest:PublishedCourse})=>{
       const last=history.rows.find(x=>x.course_id===course.id);const {pages:_pages,steps:_steps,...card}=course;void _pages;void _steps;
       return {...card,progress:{stepIndex:last?.step_index??0,completed:last?.end_reason==='content_completed'}};
     });
     const current=active.rows.find(row=>row.status!=='ended');
-    const ended=await db.query("SELECT r.id,r.end_reason,r.ended_at,r.elapsed_ms,c.manifest->>'title' AS course_title FROM teeko_classrooms r JOIN teeko_courses c ON c.id=r.course_id AND c.version=r.course_version WHERE r.account_id=$1 AND NOT(r.course_id=ANY($2::text[])) AND r.status='ended' AND r.ended_at IS NOT NULL ORDER BY r.ended_at DESC,r.recorded_at DESC LIMIT 6",[accountId,TOPIC_CATALOG.map(topic=>topic.id)]);
+    const ended=await db.query("SELECT r.id,r.end_reason,r.ended_at,r.elapsed_ms,c.manifest->>'title' AS course_title FROM teeko_classrooms r JOIN teeko_courses c ON c.id=r.course_id AND c.version=r.course_version WHERE r.account_id=$1 AND NOT(r.course_id=ANY($2::text[]) OR c.manifest ? 'topic') AND r.status='ended' AND r.ended_at IS NOT NULL ORDER BY r.ended_at DESC,r.recorded_at DESC LIMIT 6",[accountId,TOPIC_CATALOG.map(topic=>topic.id)]);
     const recentClassrooms:RecentClassroom[]=ended.rows.map(row=>({id:row.id,courseTitle:row.course_title,endedAt:row.ended_at.toISOString(),endReason:row.end_reason,elapsedSeconds:Math.floor(Number(row.elapsed_ms)/1000)}));
     return {courses,activeClassroom:current?{id:current.id,courseId:current.course_id,status:current.status,provider:current.preferences.provider}:null,recentClassrooms};
   });}
@@ -197,8 +200,9 @@ export class ClassroomService {
     for(const row of unfinished.rows){await this.settle(db,row);await this.save(db,row);if(row.status!=='ended') fail('CLASSROOM_EXISTS','你还有一节未结束的课堂，请先继续或结束它。');}
     const profile=(await db.query('SELECT name,age_range,level FROM teeko_profiles WHERE account_id=$1',[accountId])).rows[0];
     if(!profile)fail('PROFILE_REQUIRED','请先填写孩子档案。');
-    const selected=(await db.query('SELECT version,manifest FROM teeko_courses WHERE id=$1 ORDER BY published_at DESC LIMIT 1',[courseId])).rows[0];
-    if(!selected)fail('COURSE_UNAVAILABLE','这门课程暂时不可用。',404);
+    const bundledVersion=this.bundledVersions?.get(courseId);
+    const selected=(await db.query<{version:string;manifest:PublishedCourse}>('SELECT version,manifest FROM teeko_courses WHERE id=$1 AND ($2::text IS NULL OR version=$2) ORDER BY published_at DESC LIMIT 1',[courseId,bundledVersion??null])).rows[0];
+    if(!selected||selected.manifest.topic&&this.bundledVersions&&!bundledVersion)fail('COURSE_UNAVAILABLE','这门课程暂时不可用。',404);
     const used=Number((await db.query('SELECT milliseconds FROM teeko_classroom_usage WHERE account_id=$1 AND day_key=$2',[accountId,day(this.now())])).rows[0]?.milliseconds??0);
     const remaining=this.dailyMs-used;if(remaining<1000)fail('DAILY_LIMIT','今天的试上课时长已用完，明天再来。');
     const saved=(await db.query('SELECT preferences FROM teeko_preferences WHERE account_id=$1',[accountId])).rows[0]?.preferences;
@@ -211,7 +215,7 @@ export class ClassroomService {
     await db.query(`INSERT INTO teeko_classrooms(id,account_id,course_id,course_version,profile,preferences,status,max_ms,limit_reason,started_at,day_key,teacher_config) VALUES($1,$2,$3,$4,$5,$6,'preflight',$7,$8,$9,$10,$11)`,[id,accountId,courseId,selected.version,JSON.stringify({name:profile.name,ageRange:profile.age_range,level:profile.level}),JSON.stringify(prefs),max,max<sessionMax?'daily_limit':'time_limit',this.now(),day(this.now()),teacher?JSON.stringify(teacher):null]);
     await db.query('INSERT INTO teeko_classroom_note_state(classroom_id,captured_from_start) VALUES($1,true)',[id]);
     const previous=(await db.query('SELECT step_index,helped_steps,end_reason FROM teeko_classrooms WHERE account_id=$1 AND course_id=$2 AND course_version=$3 AND id<>$4 ORDER BY recorded_at DESC LIMIT 1',[accountId,courseId,selected.version,id])).rows[0];
-    if(!isTopicCourseId(courseId)&&previous&&previous.end_reason!=='content_completed')await db.query('UPDATE teeko_classrooms SET step_index=$2,helped_steps=$3 WHERE id=$1',[id,previous.step_index,JSON.stringify(previous.helped_steps)]);
+    if(!isTopicCourse(selected.manifest)&&previous&&previous.end_reason!=='content_completed')await db.query('UPDATE teeko_classrooms SET step_index=$2,helped_steps=$3 WHERE id=$1',[id,previous.step_index,JSON.stringify(previous.helped_steps)]);
     const created=await this.row(db,accountId,id);await this.note(db,created,{eventKey:'classroom-created',kind:'connection',actor:'application',status:'recorded',name:'classroom_created',details:{state:'preflight'}});return this.snapshot(db,created);
   });}
   async notes(accountId:string,id:string,input:unknown={}):Promise<Omit<ClassroomNotesPage,'ok'>>{
@@ -374,7 +378,7 @@ export class ClassroomService {
     if(row.status==='ended'){if(action.type==='end')return this.snapshot(db,row);fail('ENDED','这节课堂已经结束。');}
     this.cancelAssessment(id);
     const course=await this.course(db,row),step=course.steps[row.step_index],actionStep=row.step_index,previousFeedback=row.feedback?.id;
-    if(isTopicCourseId(course.id)&&action.type==='select')fail('ACTION_UNAVAILABLE','这个主题通过语音交流，请直接告诉老师。');
+    if(isTopicCourse(course)&&action.type==='select')fail('ACTION_UNAVAILABLE','这个主题通过语音交流，请直接告诉老师。');
     if(action.type==='end')this.finish(row,'manual');
     else if(action.type==='pause'){row.status='paused';row.active_since=null;row.owner_token=null;row.lease_until=null;}
     else if(action.type==='resume'){if(row.status!=='paused')fail('STATE','这节课堂没有暂停。');row.status='preflight';}
@@ -396,10 +400,11 @@ export class ClassroomService {
   async point(accountId:string,id:string,epoch:number,token:string,request:ClassroomPointRequest,authorize?:()=>Promise<boolean>):Promise<{accepted:boolean;snapshot:ClassroomSnapshot}>{return this.tx(accountId,async db=>{
     const row=await this.row(db,accountId,id);await this.settle(db,row);
     const denied=async()=>{await this.settle(db,row);await this.save(db,row);return {accepted:false,snapshot:await this.snapshot(db,row)};};
-    if(isTopicCourseId(row.course_id))return denied();
+    const snapshot=await this.snapshot(db,row);
+    if(isTopicCourse(snapshot.course))return denied();
     const authorized=async()=>{try{return !authorize||await authorize();}catch{return false;}};
     if(!await authorized())return denied();
-    const snapshot=await this.snapshot(db,row),captured=captureClassroomPoint(snapshot,request);
+    const captured=captureClassroomPoint(snapshot,request);
     if(!captured.accepted||row.connection_epoch!==epoch||row.owner_token!==token)return denied();
     const duplicate=await db.query('SELECT 1 FROM teeko_classroom_actions WHERE classroom_id=$1 AND event_id=$2',[id,captured.request.eventId]);
     if(duplicate.rowCount)return denied();

@@ -127,9 +127,29 @@ test('an unfinished original classroom is offered for recovery and never replace
   handler = call => call.path.endsWith('/auth/state') ? ok({ user, flow: null }) : call.path.includes('/topics/history') ? ok({ ...emptyHistory, activeClassroom: { id, courseId: 'picnic', status: 'paused', provider: 'qwen' } }) : original(call);
   render(<TopicDetail topicId="topic-robot" start/>);
   await waitFor(() => assert(screen.getByRole('link', { name: '回到正在进行的课堂' })));
-  assert.equal(screen.getByRole('link', { name: '回到正在进行的课堂' }).getAttribute('href'), `/classroom/${id}`);
+  assert.equal(screen.getByRole('link', { name: '回到正在进行的课堂' }).getAttribute('href'), `/topics/classroom/${id}`);
   assert(!screen.queryByRole('button', { name: '开始这次学习' }));
   assert(!calls.some(call => call.path.endsWith('/classrooms') || call.path.endsWith('/actions')));
+});
+
+test('a course package uses the same topic catalog and resume URLs as built-in topics', async () => {
+  const idFromPackage = 'seabird-flights';
+  const card = {...TOPIC_CATALOG[0], id: idFromPackage, title: '海鸟为什么会飞？'};
+  const original = handler;
+  handler = call => {
+    if (call.path.endsWith('/auth/state')) return ok({user, flow: null});
+    if (call.path.endsWith('/topics')) return ok({topics: [card]});
+    if (call.path.includes('/topics/history')) return ok({...emptyHistory, activeClassroom: {id, courseId: idFromPackage, status: 'paused', provider: 'qwen'}});
+    return original(call);
+  };
+  const catalog = render(<TopicCatalog/>);
+  assert.equal((await screen.findByRole('link', {name: /海鸟为什么会飞/})).getAttribute('href'), `/topics/${idFromPackage}`);
+  catalog.unmount();
+  const detail = render(<TopicDetail topicId={idFromPackage} start/>);
+  assert.equal((await screen.findByRole('link', {name: '回到正在进行的课堂'})).getAttribute('href'), `/topics/classroom/${id}`);
+  detail.unmount();
+  render(<TopicProfile/>);
+  assert.equal((await screen.findByRole('link', {name: '继续学习'})).getAttribute('href'), `/topics/classroom/${id}`);
 });
 
 test('no configured voice service prevents classroom creation and honestly explains availability', async () => {

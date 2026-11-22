@@ -4,10 +4,10 @@ Teeko 是一个面向 8–13 岁孩子的 AI 英语陪学工具。孩子选一�
 
 ## 制作教材
 
-从[教材制作手册](courses/AUTHORING.md)开始。手册末尾的首轮任务可以直接交给 Grok。参考[原创两页纸飞机教材](courses/drafts/paper-glider/1/course.json)和[样例制作说明](courses/drafts/paper-glider/1/AUTHOR-NOTES.md)。草稿通过文件检查和人工复核后，由应用维护者接入课程目录。
+从[教材制作手册](courses/AUTHORING.md)开始。课程作者把教材包提交到 `courses/topics/<course-id>/<version>/`。PR 合并并随当前版本部署后，应用自动读取目录、课件和教案。可以参考[鲸鱼课发布包](courses/topics/whale-snot-drones/1/course.json)，或先在 `courses/drafts/` 试做[两页纸飞机样例](courses/drafts/paper-glider/1/course.json)。
 
 ```sh
-npm run courses:check -- courses/drafts/paper-glider/1
+npm run courses:check -- courses/topics/whale-snot-drones/1
 ```
 
 ## 本地运行

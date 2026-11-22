@@ -5,7 +5,7 @@ import {accountCookie} from '../../../../lib/server/account-http';
 import {TopicClassroom} from '../../../../components/topics/topic-classroom';
 import {classroomId} from '../../../../components/product/classroom-request';
 import {getClassroomService} from '../../../../lib/server/classroom-runtime';
-import {isTopicCourseId} from '../../../../lib/topic-learning';
+import {isTopicCourse} from '../../../../lib/topic-learning';
 import {ClassroomError} from '../../../../lib/server/classroom-service';
 import '../../../../components/product/classroom.css';
 import '../../../../components/product/teacher-avatar.css';
@@ -22,6 +22,6 @@ export default async function TopicClassroomPage({params}:{params:Promise<{id:st
  const user=await getAccountService().session(accountCookie(new Request('https://app.local',{headers:incoming}),'teeko_session')).catch(()=>null);
  if(!user)redirect(`/topics/login?next=${encodeURIComponent(`/topics/classroom/${id}`)}`);
  const state=await (await getClassroomService()).get(user.id,id).catch(error=>{if(error instanceof ClassroomError&&error.status===404)notFound();throw error;});
- if(!isTopicCourseId(state.course.id))redirect(`/classroom/${id}`);
+ if(!isTopicCourse(state.course))redirect(`/classroom/${id}`);
  return <TopicClassroom id={id}/>;
 }

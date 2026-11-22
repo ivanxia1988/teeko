@@ -6,6 +6,7 @@ import { access } from 'node:fs/promises';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
+import {topicCatalogResponseSchema} from '../lib/topic-learning';
 
 const project = fileURLToPath(new URL('../', import.meta.url));
 const runner = fileURLToPath(new URL('../scripts/run-node-framework.mjs', import.meta.url));
@@ -73,6 +74,22 @@ test('Node production serves local HTTP and rejects anonymous or forged Sites id
     const response = await fetch(`${origin}${path}`);
     assert.equal(response.status, 200, `Unable to load ${path}`);
   }
+  const topicResponse = await fetch(`${origin}/api/v1/topics`);
+  assert.equal(topicResponse.status, 200);
+  const {topics} = topicCatalogResponseSchema.parse(await topicResponse.json());
+  const whale = topics.find(topic => topic.id === 'whale-snot-drones');
+  assert(whale, 'The bundled whale package should appear without a registry entry.');
+  assert(!topics.some(topic => topic.id === 'paper-glider'), 'The paper glider sample is still a draft.');
+  assert.equal((await fetch(`${origin}/topics/${whale.id}`)).status, 200);
+  const cover = await fetch(`${origin}${whale.coverImage}`);
+  assert.equal(cover.status, 200);
+  assert.equal(cover.headers.get('content-type'), 'image/svg+xml');
+  assert.equal(cover.headers.get('x-content-type-options'), 'nosniff');
+  assert.match(await cover.text(), /<svg/);
+  const reading = await fetch(`${origin}/course-assets/${whale.id}/1/page-two.svg`);
+  assert.equal(reading.status, 200);
+  assert.match(await reading.text(), /58 samples/);
+  assert.equal((await fetch(`${origin}/course-assets/paper-glider/1/look-at-the-glider.svg`)).status, 404);
   for (const path of ['/prototype', '/preview', '/legacy-classroom']) {
     const response = await fetch(`${origin}${path}`);
     assert.equal(response.status, 404, `Development-only page exposed: ${path}`);

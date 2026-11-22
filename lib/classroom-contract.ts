@@ -12,6 +12,7 @@ export type PublishedCourse = {
   words: string[]; objectives: string[]; durationMinutes: number;
   pages: BookPage[]; steps: LessonStep[];
   reading?: {sourceTitle:string;sourceUrl:string;attribution:string};
+  topic?: {category:'science'|'life';difficulty:'starter'|'intermediate'};
   sessionLimitSeconds?: number;
 };
 export type CourseCard = Omit<PublishedCourse, 'pages' | 'steps'> & {

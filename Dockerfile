@@ -14,6 +14,7 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/.next-node ./.next-node
 COPY --from=build /app/public ./public
+COPY --from=build /app/courses/topics ./courses/topics
 COPY --from=build /app/next.config.ts /app/tsconfig.json /app/tsconfig.node.json ./
 COPY --from=build /app/db ./db
 COPY --from=build /app/lib ./lib

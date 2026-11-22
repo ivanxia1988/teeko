@@ -36,8 +36,8 @@ export const PICNIC_COURSE:PublishedCourse={
     {id:'picnic-chat',kind:'listen',pageId:'picnic-table',targetId:null,english:"We have planned our picnic! What else would you like to talk about?",chinese:'聊聊你的野餐计划',hint:'You can tell me where you would go, ask me something, or choose to finish when you are ready.',expected:null},
   ],
 };
-export async function publishTrialCourses(pool:Pool) {
-  for(const course of [PICNIC_COURSE_V1,PICNIC_COURSE,ROBOT_READING_COURSE,...TOPIC_COURSES]){
+export async function publishTrialCourses(pool:Pool, bundledCourses:readonly PublishedCourse[] = []) {
+  for(const course of [PICNIC_COURSE_V1,PICNIC_COURSE,ROBOT_READING_COURSE,...TOPIC_COURSES,...bundledCourses]){
     const manifest=JSON.stringify(course), checksum=createHash('sha256').update(manifest).digest('hex');
     await pool.query('INSERT INTO teeko_courses(id,version,manifest,checksum) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[course.id,course.version,manifest,checksum]);
     const result=await pool.query('SELECT checksum FROM teeko_courses WHERE id=$1 AND version=$2',[course.id,course.version]);

@@ -3,7 +3,7 @@
   <desc>A humpback whale breathes out a big spray from the top of its head. A small orange drone is flying in the spray.</desc>
   <rect width="900" height="620" rx="28" fill="#fdf5e7"/>
   <text x="56" y="92" fill="#362b20" font-family="Helvetica, Arial, sans-serif" font-size="46" font-weight="bold">Drones and Whale Snot</text>
-  <text x="56" y="126" fill="#7a6a58" font-family="Helvetica, Arial, sans-serif" font-size="18">News: BBC Newsround, 18 November 2026</text>
+  <text x="56" y="126" fill="#7a6a58" font-family="Helvetica, Arial, sans-serif" font-size="18">Source: University of St Andrews, 17 November 2026</text>
   <rect x="40" y="378" width="820" height="78" rx="18" fill="#5aa3c9"/>
   <path d="M288 404 Q425 272 568 326 Q650 350 716 404 Z" fill="#3d556b" stroke="#25384a" stroke-width="5" stroke-linejoin="round"/>
   <path d="M600 338 L628 312 L640 352 Z" fill="#3d556b" stroke="#25384a" stroke-width="4" stroke-linejoin="round"/>

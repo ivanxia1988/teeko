@@ -5,7 +5,7 @@ import { ClassroomError, type ClassroomService } from './classroom-service';
 import type { ClassroomPreferences } from '../classroom-contract';
 import type {ClassroomRefreshReason} from './classroom-events';
 import {classroomPointDiagnosticsBodySchema} from '../classroom-point-diagnostics';
-import {parseTopicHistoryQuery} from '../topic-learning';
+import {parseTopicHistoryQuery,type TopicCard} from '../topic-learning';
 
 export const preferencesSchema=z.object({provider:z.enum(['qwen','openai','grok']),language:z.enum(['english','bilingual']),style:z.enum(['gentle','focused','strict']),voice:z.enum(['female','male']),soundEffects:z.boolean()}).strict();
 const createSchema=z.object({courseId:z.string().min(1).max(80),preferences:preferencesSchema.optional()}).strict();
@@ -14,6 +14,11 @@ const classroomPath=/^\/classrooms\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 export function isClassroomApi(path:string){return ['/api/v1/courses','/api/v1/classroom-options','/api/v1/preferences','/api/v1/classrooms','/api/v1/topics','/api/v1/topics/history'].includes(path)||path.startsWith('/api/v1/classrooms/');}
 type Provider={id:'qwen'|'openai'|'grok';name:string;configured:boolean};
 type Dependencies={origin:string;service:ClassroomService;authenticate:(request:Request)=>Promise<{id:string;profileComplete:boolean}|null>;providers:()=>Provider[];limit:(accountId:string)=>Promise<void>;limitDiagnostics?:(accountId:string)=>Promise<void>;changed?:(id:string,reason?:ClassroomRefreshReason)=>Promise<void>};
+export async function publicTopicCatalog(request:Request,topics:()=>Promise<TopicCard[]>){
+  if(request.method!=='GET')throw new ClassroomError('METHOD','不支持此请求方式。',405);
+  if(new URL(request.url).search)return accountResponse({ok:false,error:{code:'INVALID_INPUT',message:'请求内容无效，请重新操作。'}},400);
+  return accountResponse({ok:true,topics:await topics()});
+}
 export function createClassroomHandler(deps:Dependencies){return async(request:Request)=>{
   try{
     const path=new URL(request.url).pathname.replace(/^\/api\/v1/,'');
@@ -21,11 +26,7 @@ export function createClassroomHandler(deps:Dependencies){return async(request:R
     if(!['/courses','/classroom-options','/preferences','/classrooms','/topics','/topics/history'].includes(path)&&!match)throw new ClassroomError('NOT_FOUND','接口不存在。',404);
     const write=request.method==='POST'||request.method==='PATCH';
     if(write&&(request.headers.get('origin')!==deps.origin||request.headers.get('sec-fetch-site')==='cross-site'))throw new ClassroomError('ORIGIN','请求来源无效，请刷新重试。',403);
-    if(path==='/topics'){
-      if(request.method!=='GET')throw new ClassroomError('METHOD','不支持此请求方式。',405);
-      if(new URL(request.url).search)throw new ClassroomError('INVALID_INPUT','请求内容无效，请重新操作。',400);
-      return accountResponse({ok:true,topics:await deps.service.topics()});
-    }
+    if(path==='/topics')return await publicTopicCatalog(request,()=>deps.service.topics());
     const user=await deps.authenticate(request);
     if(!user)throw new ClassroomError('UNAUTHORIZED','请先登录。',401);
     if(path==='/topics/history'){
